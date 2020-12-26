@@ -1,3 +1,6 @@
+public/*.js
+public/*.js.map
+
 .idea
 .vscode
 .next
