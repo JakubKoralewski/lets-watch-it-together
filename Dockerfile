@@ -35,4 +35,4 @@ EXPOSE 3000
 RUN adduser -D myuser
 USER myuser
 
-CMD ["node_modules/.bin/next", "start", "-p", "$PORT"]
+CMD ["node_modules/.bin/next", "start", "-p", "$$PORT"]
