@@ -1,0 +1,14 @@
+{
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev"
+    },
+    {
+      "plan": "heroku-redis:hobby-dev"
+    }
+  ],
+  "name": "Let's Watch It Together",
+  "description": "University project",
+  "repository": "https://github.com/JakubKoralewski/lets-watch-it-together",
+  "stack": "container"
+}
