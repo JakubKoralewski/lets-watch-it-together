@@ -4,8 +4,8 @@ import { configureStore } from '@reduxjs/toolkit'
 import exampleReducer from './lib/exampleSlice'
 
 export default configureStore({
-  reducer: {
-    counter: exampleReducer
-  },
-  devTools: true,
+	reducer: {
+		counter: exampleReducer
+	},
+	devTools: true,
 })
