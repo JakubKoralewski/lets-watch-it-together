@@ -22,6 +22,8 @@ RUN npm i --production
 # Stage 2: And then copy over node_modules, etc from that stage to the smaller base image
 FROM mhart/alpine-node:slim as production
 
+RUN apk --no-cache add curl
+
 WORKDIR /app
 
 # COPY package.json next.config.js .env* ./
