@@ -2,3 +2,11 @@
 
 
 RUP University Project
+
+## Development
+
+Make sure you have Docker installed. Then run:
+
+```bash
+$ docker-compose up
+```

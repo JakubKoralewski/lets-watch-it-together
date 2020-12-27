@@ -1,3 +1,5 @@
+.env
+
 public/*.js
 public/*.js.map
 
