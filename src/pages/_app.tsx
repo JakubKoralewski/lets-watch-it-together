@@ -3,12 +3,22 @@ import PropTypes from 'prop-types'
 import Head from 'next/head'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
+import { AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/router'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import theme from 'theme'
 import store from 'store'
+import { motion } from 'framer-motion'
 
-export default function MyApp(props) {
-	const { Component, pageProps } = props
+// https://github.com/vercel/next.js/blob/canary/examples/with-framer-motion/pages/_app.js
+function handleExitComplete() {
+	if (typeof window !== 'undefined') {
+		window.scrollTo({ top: 0 })
+	}
+}
+
+export default function MyApp({ Component, pageProps }) {
+	const router = useRouter()
 
 	React.useEffect(() => {
 		// Remove the server-side injected CSS.
@@ -27,13 +37,25 @@ export default function MyApp(props) {
 				/>
 			</Head>
 			<ThemeProvider theme={theme}>
-				{
-					/* CssBaseline kickstart an elegant, consistent,
-					 and simple baseline to build upon. */
-				}
+				{/* CssBaseline kickstart an elegant, consistent,
+					 and simple baseline to build upon. */}
 				<CssBaseline />
 				<Provider store={store}>
-					<Component {...pageProps} />
+					<AnimatePresence
+						exitBeforeEnter
+						onExitComplete={handleExitComplete}
+					>
+						<motion.div
+							key={router.route}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+						>
+							<Component
+								{...pageProps}
+							/>
+						</motion.div>
+					</AnimatePresence>
 				</Provider>
 			</ThemeProvider>
 		</React.Fragment>
