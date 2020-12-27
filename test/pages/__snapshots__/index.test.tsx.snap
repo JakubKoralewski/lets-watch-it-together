@@ -3,119 +3,105 @@
 exports[`Home page matches snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="jsx-2250570153 container"
+    class="MuiContainer-root MuiContainer-maxWidthSm"
   >
-    <main
-      class="jsx-2250570153"
+    <div
+      class="MuiBox-root MuiBox-root-1"
     >
-      <h1
-        class="jsx-2250570153 title"
-      >
-        Welcome to 
-        <a
-          class="jsx-2250570153"
-          href="https://nextjs.org"
-        >
-          Next.js!
-        </a>
-      </h1>
-      <p
-        class="jsx-2250570153 description"
-      >
-        Get started by editing 
-        <code
-          class="jsx-2250570153"
-        >
-          pages/index.tsx
-        </code>
-      </p>
-      <button
-        class="jsx-2250570153"
-      >
-        Test Button
-      </button>
       <div
-        class="jsx-2250570153 grid"
+        class="row"
       >
-        <a
-          class="jsx-2250570153 card"
-          href="https://nextjs.org/docs"
+        <button
+          aria-label="Increment value"
+          class="button"
         >
-          <h3
-            class="jsx-2250570153"
-          >
-            Documentation →
-          </h3>
-          <p
-            class="jsx-2250570153"
-          >
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-        <a
-          class="jsx-2250570153 card"
-          href="https://nextjs.org/learn"
+          +
+        </button>
+        <span
+          class="value"
         >
-          <h3
-            class="jsx-2250570153"
-          >
-            Learn →
-          </h3>
-          <p
-            class="jsx-2250570153"
-          >
-            Learn about Next.js in an interactive course with quizzes!
-          </p>
-        </a>
-        <a
-          class="jsx-2250570153 card"
-          href="https://github.com/vercel/next.js/tree/master/examples"
+          0
+        </span>
+        <button
+          aria-label="Decrement value"
+          class="button"
         >
-          <h3
-            class="jsx-2250570153"
-          >
-            Examples →
-          </h3>
-          <p
-            class="jsx-2250570153"
-          >
-            Discover and deploy boilerplate example Next.js projects.
-          </p>
-        </a>
-        <a
-          class="jsx-2250570153 card"
-          href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-        >
-          <h3
-            class="jsx-2250570153"
-          >
-            Deploy →
-          </h3>
-          <p
-            class="jsx-2250570153"
-          >
-            Instantly deploy your Next.js site to a public URL with Vercel.
-          </p>
-        </a>
+          -
+        </button>
       </div>
-    </main>
-    <footer
-      class="jsx-2250570153"
-    >
-      <a
-        class="jsx-2250570153"
-        href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-        rel="noopener noreferrer"
-        target="_blank"
+      <div
+        class="row"
       >
-        Powered by 
-        <img
-          alt="Vercel Logo"
-          class="jsx-2250570153 logo"
-          src="/vercel.svg"
+        <input
+          aria-label="Set increment amount"
+          class="textbox"
+          value="2"
         />
+        <button
+          class="button"
+        >
+          Add Amount
+        </button>
+        <button
+          class="button asyncButton"
+        >
+          Add Async
+        </button>
+      </div>
+      <div
+        class="row"
+      >
+        <button
+          class="button"
+        >
+          Reset
+        </button>
+      </div>
+      <h1
+        class="MuiTypography-root MuiTypography-h4 MuiTypography-gutterBottom"
+      >
+        Next.js example
+      </h1>
+      <a
+        href="/about"
+      >
+        Go to the about page
       </a>
-    </footer>
+      <p
+        class="MuiTypography-root makeStyles-root-2 MuiTypography-body1 MuiTypography-colorTextSecondary"
+      >
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root makeStyles-lightBulb-3"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
+          />
+        </svg>
+        Pro tip: See more 
+        <a
+          class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+          href="https://material-ui.com/getting-started/templates/"
+        >
+          templates
+        </a>
+         on the Material-UI documentation.
+      </p>
+      <p
+        class="MuiTypography-root MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-alignCenter"
+      >
+        Copyright © 
+        <a
+          class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorInherit"
+          href="https://material-ui.com/"
+        >
+          Your Website
+        </a>
+         2020.
+      </p>
+    </div>
   </div>
 </DocumentFragment>
 `;
