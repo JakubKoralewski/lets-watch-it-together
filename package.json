@@ -14,6 +14,7 @@
     "test-all": "yarn lint && yarn type-check && yarn test"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.2",
     "next": "latest",
     "next-pwa": "^5.0.1",
     "react": "^16.13.1",

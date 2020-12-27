@@ -1,5 +1,6 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import { description, ogUrl, shortDescription, summary } from '../seo/seo';
+import theme from '../theme'
 
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -24,7 +25,7 @@ class MyDocument extends Document {
           <meta name='msapplication-TileColor' content='#2B5797' />
           <meta name='msapplication-tap-highlight' content='no' />
           {/*TODO: Choose color*/}
-          <meta name='theme-color' content='#000000' />
+          <meta name='theme-color' content={theme.palette.primary.main} />
 
           {/*TODO: Make PWA icons*/}
           <link rel='apple-touch-icon' sizes='180x180' href='/static/icons/apple-touch-icon.png' />
