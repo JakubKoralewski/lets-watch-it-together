@@ -1,0 +1,29 @@
+name: Lint
+
+on: push
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Nodejs
+        uses: actions/setup-node@v1
+
+      - name: Install Node.js dependencies
+        run: npm i
+
+      # Install your linters here
+      - run: npm i eslint prettier -g
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          eslint: true
+          prettier: true
+          # Enable your linters here
