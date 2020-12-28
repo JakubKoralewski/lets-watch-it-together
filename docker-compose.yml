@@ -2,18 +2,6 @@
 
 version: '2'
 services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    env_file: .env
-    environment:
-      - PORT=3000
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - .:/app
   db:
     image: postgres:latest
     ports:

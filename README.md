@@ -3,10 +3,27 @@
 
 RUP University Project
 
-## Development
+## Contributing
+
+### Development
+
+This is when you have Node.js and Docker installed.
+
+```bash
+$ npm install
+$ docker-compose up --detach
+$ npm run dev
+```
+
+Then once you're finished, tear down the PostgreSQL and Redis containers.
+```bash
+$ docker-compose down
+```
+
+### Production
 
 Make sure you have Docker installed. Then run:
 
 ```bash
-$ docker-compose up
+$ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
