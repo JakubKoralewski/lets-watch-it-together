@@ -9,8 +9,8 @@ build:
   docker:
     web: Dockerfile
 
-release:
-  image: web
+#release:
+#  image: web
     # TODO: make migrations here
 #  command:
 #    - ./deployment-tasks.sh
