@@ -1,0 +1,2 @@
+FROM mhart/alpine-node AS builder
+RUN npm i @prisma/cli -g
