@@ -9,6 +9,8 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import theme from 'theme'
 import store from 'store'
 import { motion } from 'framer-motion'
+import { AppProps } from 'next/app'
+import { Provider as NextAuthProvider } from 'next-auth/client'
 
 // https://github.com/vercel/next.js/blob/canary/examples/with-framer-motion/pages/_app.js
 function handleExitComplete() {
@@ -17,7 +19,7 @@ function handleExitComplete() {
 	}
 }
 
-export default function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }: AppProps) {
 	const router = useRouter()
 
 	React.useEffect(() => {
@@ -41,21 +43,23 @@ export default function MyApp({ Component, pageProps }) {
 					 and simple baseline to build upon. */}
 				<CssBaseline />
 				<Provider store={store}>
-					<AnimatePresence
-						exitBeforeEnter
-						onExitComplete={handleExitComplete}
-					>
-						<motion.div
-							key={router.route}
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
+					<NextAuthProvider session={pageProps.session}>
+						<AnimatePresence
+							exitBeforeEnter
+							onExitComplete={handleExitComplete}
 						>
-							<Component
-								{...pageProps}
-							/>
-						</motion.div>
-					</AnimatePresence>
+							<motion.div
+								key={router.route}
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+							>
+								<Component
+									{...pageProps}
+								/>
+							</motion.div>
+						</AnimatePresence>
+					</NextAuthProvider>
 				</Provider>
 			</ThemeProvider>
 		</React.Fragment>
@@ -64,5 +68,5 @@ export default function MyApp({ Component, pageProps }) {
 
 MyApp.propTypes = {
 	Component: PropTypes.elementType.isRequired,
-	pageProps: PropTypes.object.isRequired,
+	pageProps: PropTypes.object.isRequired
 }
