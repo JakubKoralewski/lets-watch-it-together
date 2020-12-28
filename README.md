@@ -5,6 +5,13 @@ RUP University Project
 
 ## Contributing
 
+Check out [.env.local](.env.local), you may have to fill some of those environment
+variables, and copy them to `.env` (because Prisma doesn't detect the `.env.local` file).
+
+This includes:
+- the GitHub OAuth app (id and secret) for **local development**
+   - for login
+
 ### Development
 
 This is when you have Node.js and Docker installed.
