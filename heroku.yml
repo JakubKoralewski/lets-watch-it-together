@@ -8,10 +8,10 @@ setup:
 build:
   docker:
     web: Dockerfile
+    worker: prisma/Dockerfile.worker
 
-#release:
-#  image: web
-    # TODO: make migrations here
-#  command:
-#    - ./deployment-tasks.sh
+release:
+  image: web
+  command:
+    - ./prisma/heroku-release.sh
     
