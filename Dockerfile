@@ -18,11 +18,13 @@ RUN npm run build
 RUN npm i --production
 #RUN yarn install --production --frozen-lockfile
 
+RUN apk --no-cache add curl
+RUN chmod a+x ./prisma/heroku-release.sh
 
 # Stage 2: And then copy over node_modules, etc from that stage to the smaller base image
 FROM mhart/alpine-node:slim as production
 
-RUN apk --no-cache add curl
+COPY --from=builder /usr/bin/curl /usr/bin/curl
 
 WORKDIR /app
 

@@ -8,12 +8,12 @@ setup:
 build:
   docker:
     web: Dockerfile
-    worker: prisma/Dockerfile.worker
-# https://devcenter.heroku.com/articles/build-docker-images-heroku-yml#targeting-a-stage-from-a-multi-stage-build
-# dont know if this or a separate image, since the worker requires @prisma/cli while the builder stage does not
-#    release:
-#      dockerfile: Dockerfile
-#      target: builder
+ # https://devcenter.heroku.com/articles/build-docker-images-heroku-yml#targeting-a-stage-from-a-multi-stage-build
+ # dont know if this or a separate image, since the worker requires @prisma/cli while the builder stage does not
+ # but prisma/cli is already there tho
+    worker:
+      dockerfile: Dockerfile
+      target: builder
 
 release:
   image: worker
