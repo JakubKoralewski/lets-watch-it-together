@@ -4,4 +4,4 @@ WORKDIR /app
 RUN apk --no-cache add curl
 RUN npm i @prisma/cli -g
 
-COPY . ./prisma
+COPY ./prisma ./prisma
