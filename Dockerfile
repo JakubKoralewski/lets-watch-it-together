@@ -14,8 +14,8 @@ COPY . .
 
 ENV NODE_ENV=production
 
-RUN npx prisma generate
 RUN npm run build
+RUN npx prisma generate
 RUN npm i --production
 #RUN yarn install --production --frozen-lockfile
 
