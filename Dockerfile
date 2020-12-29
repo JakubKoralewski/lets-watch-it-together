@@ -16,6 +16,7 @@ ENV NODE_ENV=production
 
 RUN npm run build
 RUN npm i --production
+RUN npx prisma generate
 #RUN yarn install --production --frozen-lockfile
 
 RUN apk --no-cache add curl
