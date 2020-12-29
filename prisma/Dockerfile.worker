@@ -5,3 +5,4 @@ RUN apk --no-cache add curl
 RUN npm i @prisma/cli -g
 
 COPY . ./prisma
+chmod a+x ./prisma/heroku-release.sh
