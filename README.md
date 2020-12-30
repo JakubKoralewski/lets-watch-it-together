@@ -19,6 +19,7 @@ for more information regarding the implementation.
 ### Development
 
 This is when you have Node.js and Docker installed.
+Make sure Docker is running.
 
 ```bash
 $ npm install
