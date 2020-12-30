@@ -39,7 +39,10 @@
 	],
 	"indent": [
 	  "error",
-	  "tab"
+	  "tab",
+	  {
+		"SwitchCase": 1
+	  }
 	],
 	"react/react-in-jsx-scope": 0,
 	"react/display-name": 0,

@@ -5,7 +5,7 @@ import {
 	ogUrl,
 	shortDescription,
 	summary,
-} from '../seo/seo'
+} from '../../seo/seo'
 import theme from '../theme'
 import { ServerStyleSheets } from '@material-ui/styles'
 

@@ -2,7 +2,7 @@ import { NextApiHandler } from 'next'
 import NextAuth, { InitOptions, User } from 'next-auth'
 import Providers from 'next-auth/providers'
 import Adapters from 'next-auth/adapters'
-import prisma from 'prisma/prisma'
+import prisma from 'lib/prisma/prisma'
 import { GenericObject } from 'next-auth/_utils'
 
 const authHandler: NextApiHandler = (req, res) =>
@@ -18,6 +18,11 @@ const options: InitOptions = {
 		}),
 	],
 	callbacks: {
+		session: async (session, user) => {
+			session.user['id'] = user['id']
+			return Promise.resolve(session)
+		},
+		/*
 		jwt(
 			token: GenericObject,
 			user: User,
@@ -28,6 +33,7 @@ const options: InitOptions = {
 			console.log('jwt callback', token, user, account, profile, isNewUser)
 			return Promise.resolve(token)
 		},
+*/
 		/**
 		 * @param  {string} url      URL provided as callback URL by the client
 		 * @param  {string} baseUrl  Default base URL of site (can be used as fallback)
@@ -45,7 +51,7 @@ const options: InitOptions = {
 	// 	jwt: true,
 	// },
 	pages: {
-		newUser: '/app/first-time',
+		newUser: '/app/welcome',
 	},
 	adapter: Adapters.Prisma.Adapter({ prisma }),
 	secret: process.env.SECRET,

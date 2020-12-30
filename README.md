@@ -6,12 +6,13 @@ Live at https://lets-watch-it-together.herokuapp.com
 
 ## Contributing
 
-Check out [.env.local](.env.local), you may have to fill some of those environment
+Check out [.env.example](.env.example), you may have to fill some of those environment
 variables, and copy them to `.env` (because Prisma doesn't detect the `.env.local` file).
 
 This includes:
 - the GitHub OAuth app (id and secret) for **local development**
    - for login
+- the TMDb API KEY
    
 Read the [Let's Watch It Together Wiki](https://www.notion.so/jcubed/Let-s-Watch-It-Together-Wiki-881515aba11241eaa43e7a9428419d81)
 for more information regarding the implementation.
@@ -20,6 +21,7 @@ for more information regarding the implementation.
 
 This is when you have Node.js and Docker installed.
 Make sure Docker is running.
+Set `NODE_ENV` to `development` to disable PWA.
 
 ```bash
 $ npm install
