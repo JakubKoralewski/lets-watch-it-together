@@ -24,6 +24,14 @@ Make sure Docker is running.
 ```bash
 $ npm install
 $ docker-compose up --detach
+```
+
+Run migrations:
+```bash
+$ npx prisma migrate dev --preview-feature
+```
+
+```bash
 $ npm run dev
 ```
 
