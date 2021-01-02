@@ -6,8 +6,8 @@ Live at https://lets-watch-it-together.herokuapp.com
 
 ## Contributing
 
-Check out [.env.example](.env.example), you may have to fill some of those environment
-variables, and copy them to `.env` (because Prisma doesn't detect the `.env.local` file).
+Check out [.env.example](.env.example), you have to fill some of those environment
+variables, and copy them to `.env`.
 
 This includes:
 - the GitHub OAuth app (id and secret) for **local development**
