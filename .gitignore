@@ -1,5 +1,5 @@
 .env
-!.env.local
+!.env.example
 
 public/*.js
 public/*.js.map

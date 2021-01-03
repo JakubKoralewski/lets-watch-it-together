@@ -42,9 +42,10 @@ describe('Home page', () => {
 		jest.restoreAllMocks()
 	})
 	it('matches snapshot', async () => {
+		const providers = {"github":{"id":"github","name":"GitHub","type":"oauth","signinUrl":"http://localhost:3000/api/auth/signin/github","callbackUrl":"http://localhost:3000/api/auth/callback/github"}};
 		await act(async () => {
 			const { asFragment } =
-				renderWithProvider(<Index />, {})
+				renderWithProvider(<Index providers={providers}/>, {})
 
 			expect(asFragment()).toMatchSnapshot()
 		})

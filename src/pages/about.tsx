@@ -7,7 +7,7 @@ import ProTip from 'components/ProTip';
 import Link from 'components/Link';
 import Copyright from 'components/Copyright';
 
-export default function About() {
+export default function About(): JSX.Element {
 	return (
 		<Container maxWidth="sm">
 			<Box my={4}>

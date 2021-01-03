@@ -34,10 +34,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 
+# For local testing only, Heroku ignores this port
 EXPOSE 3000
 
 # https://devcenter.heroku.com/articles/container-registry-and-runtime#testing-an-image-locally
 RUN adduser -D myuser
 USER myuser
 
-CMD node_modules/.bin/next start -p $PORT --hostname 0.0.0.0
+CMD [ ! -z "$HEROKU_APP_NAME" ] && export NEXTAUTH_URL="https://$HEROKU_APP_NAME.herokuapp.com" || echo "error setting env"; node_modules/.bin/next start -p $PORT --hostname 0.0.0.0

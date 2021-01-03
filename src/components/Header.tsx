@@ -9,6 +9,7 @@ const Header: React.FC = () => {
 		router.pathname === pathname
 
 	const [session, loading] = useSession()
+	console.log('session', session)
 
 	let left = (
 		<div className="left">
@@ -64,7 +65,7 @@ const Header: React.FC = () => {
 				<p>
 					{session.user.name} ({session.user.email})
 				</p>
-				<button onClick={() => signOut()}>
+				<button onClick={() => signOut({callbackUrl: '/'})}>
 					<a>Log out</a>
 				</button>
 			</div>

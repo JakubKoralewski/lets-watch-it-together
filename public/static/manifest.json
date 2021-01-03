@@ -1,0 +1,15 @@
+{
+  "name": "Let's Watch It Together",
+  "short_name": "LWIT",
+  "icons": [
+	{
+	  "src": "/vercel.svg",
+	  "type": "image/svg"
+	}
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/app",
+  "display": "standalone",
+  "orientation": "portrait"
+}
