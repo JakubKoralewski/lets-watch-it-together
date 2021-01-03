@@ -7,6 +7,11 @@
       "plan": "heroku-redis:hobby-dev"
     }
   ],
+  "env": {
+    "HEROKU_APP_NAME": {
+      "required": true
+    }
+  },
   "name": "Let's Watch It Together",
   "description": "University project",
   "repository": "https://github.com/JakubKoralewski/lets-watch-it-together",
