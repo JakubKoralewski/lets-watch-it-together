@@ -8,7 +8,6 @@ import Button from '@material-ui/core/Button'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import { getProviders, signIn, useSession } from 'next-auth/client'
-import { Providers } from 'next-auth/providers'
 import { useRouter } from 'next/router'
 
 const useStyles = makeStyles((theme) => ({
@@ -31,8 +30,11 @@ const useStyles = makeStyles((theme) => ({
 	},
 }))
 
+type ThenArg<T> =
+	T extends PromiseLike<infer U> ? U : T
+
 interface ProvidersProps {
-	providers: Providers
+	providers: ThenArg<ReturnType<(typeof getProviders)>>
 }
 
 function SignIn({ providers }: ProvidersProps) {

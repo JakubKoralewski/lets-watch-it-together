@@ -74,6 +74,8 @@ Set `NODE_ENV` to `development` to disable PWA.
     $ npm run dev
     ```
    
+   You can now start making changes to the code!
+   
 5. Tear down database and cache.
 
     If used Option A, then once you're finished, tear down the PostgreSQL and Redis containers: 
@@ -82,6 +84,30 @@ Set `NODE_ENV` to `development` to disable PWA.
     ```
    
     Else just hit Ctrl+C if run Option B.
+
+#### Testing
+
+Before you commit and push a Pull Request it is a good idea to check if the tests
+still pass. It's also a good idea to add more tests regarding the feature 
+you added.
+
+To run tests once:
+
+```bash
+$ npm test
+```
+
+To run tests in the background as you are developing 
+(only those tests will be run for which files have changed):
+
+```bash
+$ npx jest --watch
+```
+
+You can use the `--watchAll` flag to rerun all tests.
+
+See the [Jest docs](https://jestjs.io/docs/en/getting-started) for more details.
+
 
 ### Database schema changes
 
@@ -95,19 +121,21 @@ $ npx prisma migrate dev --name a-descriptive-name-of-the-thing-you-changed --pr
 where `a-descriptive-name-of-the-thing-you-changed` is a descriptive name of the thing you changed
 inside the database schema, e.g. `dropped-the-database-because-its-stupid`.
 
+See the [Prisma Migrate documentation](https://www.prisma.io/docs/concepts/components/prisma-migrate)
+for more details.
+
 ### Production
 
-To see how the container runs in production you may want to run these commands.
+To see how the container runs in production, or when you change the [`Dockerfile`](./Dockerfile)
+you may want to run these commands.
+
 Make sure you have Docker installed. Then run:
 
 ```bash
 $ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
 
-### Testing
-
-To run tests:
-
+Also you can build the app to make sure it works in production:
 ```bash
-$ npm run test
+$ NODE_ENV=production npm run build
 ```

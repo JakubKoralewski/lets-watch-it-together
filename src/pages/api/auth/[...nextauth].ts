@@ -1,9 +1,8 @@
 import { NextApiHandler } from 'next'
-import NextAuth, { InitOptions, User } from 'next-auth'
+import NextAuth, { InitOptions } from 'next-auth'
 import Providers from 'next-auth/providers'
 import Adapters from 'next-auth/adapters'
 import prisma from 'lib/prisma/prisma'
-import { GenericObject } from 'next-auth/_utils'
 
 const authHandler: NextApiHandler = (req, res) =>
 	NextAuth(req, res, options)
