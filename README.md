@@ -143,8 +143,11 @@ $ docker build . --tag lwit
 
 To also run the above built image:
 ```bash
-$ docker run lwit
+$ docker run -e PORT=3000 lwit
 ```
+
+where `3000` is the port you want the server to run on and `lwit` is
+the same tag you named the image in `docker build`.
 
 Also you can build the app to make sure it works in production:
 ```bash
