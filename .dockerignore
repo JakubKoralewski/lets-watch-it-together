@@ -1,3 +1,5 @@
+# Basically put anything here that is not necessary for the build AND
+# also those which when change you do not want to invalidate the Docker cache
 .env
 .git
 .next
@@ -5,6 +7,17 @@
 npm-debug.log*
 yarn-debug.log*
 
-## Dependency directories
 node_modules/
 test
+.github
+.eslintignore
+.eslintrc.json
+.gitattributes
+.gitignore
+.prettierignore
+.prettierrc
+heroku.yml
+app.json
+jest.config.js
+LICENSE
+README.md

@@ -126,13 +126,24 @@ for more details.
 
 ### Production
 
-To see how the container runs in production, or when you change the [`Dockerfile`](./Dockerfile)
+To see how the containers run in production, or when you change the [`Dockerfile`](./Dockerfile)
 you may want to run these commands.
 
-Make sure you have Docker installed. Then run:
+Make sure you have Docker installed. Then run (to test all containers):
 
 ```bash
 $ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+```
+
+To test just the web app `Dockerfile`:
+
+```bash
+$ docker build . --tag lwit
+```
+
+To also run the above built image:
+```bash
+$ docker run lwit
 ```
 
 Also you can build the app to make sure it works in production:
