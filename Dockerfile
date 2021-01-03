@@ -41,4 +41,4 @@ EXPOSE 3000
 RUN adduser -D myuser
 USER myuser
 
-CMD /bin/sh -c "([ ! -z \"$HEROKU_APP_NAME\" ] && export NEXTAUTH_URL=\"https://$HEROKU_APP_NAME.herokuapp.com\") || true"; node_modules/.bin/next start -p $PORT --hostname 0.0.0.0
+CMD [ ! -z "$HEROKU_APP_NAME" ] && export NEXTAUTH_URL="https://$HEROKU_APP_NAME.herokuapp.com" || echo "error setting env"; node_modules/.bin/next start -p $PORT --hostname 0.0.0.0
