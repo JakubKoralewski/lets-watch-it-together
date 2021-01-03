@@ -59,7 +59,7 @@ function SignIn({ providers }: ProvidersProps) {
 	)
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
 	return {
 		props: {
 			providers: await getProviders(),
