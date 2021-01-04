@@ -67,6 +67,11 @@ Set `NODE_ENV` to `development` to disable PWA.
     ```bash
     $ npx prisma migrate dev --preview-feature
     ```
+   
+   You can also add some dummy users if you want:
+   ```bash
+   $ ts-node -P ./prisma/seeding/tsconfig.json ./prisma/seeding/initiateDb.ts
+   ```
 
 4. Start the Next.js app in development mode (with live reload):
 
