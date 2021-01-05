@@ -15,11 +15,15 @@ import {
 	AccountCircle,
 	InsertDriveFile,
 	Search,
-	MoreVert
+	MoreVert,
+	Movie
 } from '@material-ui/icons'
 import useDebounced from '../../lib/utils/useDebounced'
 import { UserPublic, UserPublicSearchResult } from '../../lib/UserPublic'
 import UserSmall from '../../components/User/UserSmall'
+import { StrippedShowDetails } from 'lib/api/shows/[id]/StrippedShowDetails'
+import { ImdbMediaId, serializeId, TmdbIdSerialized } from '../../lib/tmdb/api/id'
+import ShowSmall from '../../components/Show/ShowSmall'
 
 enum Stages {
 	AddFriends,
@@ -36,7 +40,9 @@ interface GoToNextStageProps {
 
 	prevStage(): void
 }
-
+/**
+ * TODO: https://material-ui.com/components/steppers/
+ */
 function NextOrSkipWrapper(
 	{
 		nextStage,
@@ -85,6 +91,9 @@ const useFriendsStyles = makeStyles((theme) => ({
 	},
 	usersContainer: {
 		display: 'flex'
+	},
+	root: {
+		flexGrow: 1
 	}
 }))
 
@@ -230,8 +239,12 @@ function AddShows(
 	}: GoToNextStageProps
 ) {
 	const styles = useFriendsStyles()
+
+	const [shows, setShows] = useState<Record<TmdbIdSerialized,
+		StrippedShowDetails>>({})
+
 	const onChangeDropzone = async (files: File[]) => {
-		const imdbIds = (
+		const imdbIds: ImdbMediaId[] = (
 			await Promise.all(
 				files.map(async (file) => {
 					const text = await file.text()
@@ -249,36 +262,44 @@ function AddShows(
 					/* IMDb ids */
 					return lines
 						.slice(1)
-						.map((line) => {
+						.map((line): ImdbMediaId => {
 							const properties = line.split(',')
 							/* TODO: maybe check if starts with `tt` */
-							return properties[index]
+							return properties[index] as ImdbMediaId
 						})
 						.filter((x) => Boolean(x))
 				})
 			)
-		).flatMap((x) => {
-			if ('message' in x) {
-				/*TODO: maybe display error to user in snackbar */
-				console.error(x)
-			} else {
-				return x
-			}
-		})
-			.filter((x) => Boolean(x))
+		)
+			.flatMap<ImdbMediaId>(x => {
+				if ('message' in x) {
+					/*TODO: maybe display error to user in snackbar */
+					console.error(x)
+				} else {
+					return x as ImdbMediaId[]
+				}
+			})
+			.filter((x) => Boolean(x)) as ImdbMediaId[]
 
 		console.log('onchangedropzone', files, imdbIds)
 		if (imdbIds.length > 0) {
-			const response = await fetch('/api/shows', {
+			const response = await fetch('/api/shows?convert=1&small=1', {
 				method: 'POST',
 				body: JSON.stringify({
 					imdbIds
 				})
 			})
-			const json: number[] = await response.json()
+			const json: StrippedShowDetails[] = await response.json()
+			const showMap: Record<TmdbIdSerialized, StrippedShowDetails> = {}
+			json.forEach(show => {
+				const serialized = serializeId(show.id)
+				showMap[serialized] = show
+			})
+			setShows(old => ({ ...old, ...showMap }))
 			console.log({ json })
 		}
 	}
+	const onShowLiked = () => 0
 
 	return (
 		<NextOrSkipWrapper
@@ -319,14 +340,52 @@ function AddShows(
 							<li>Click "Export"</li>
 							<li>Upload the CSV with your liked shows below</li>
 						</ol>
+						<DropzoneArea
+							Icon={InsertDriveFile as any}
+							filesLimit={1}
+							onChange={onChangeDropzone}
+							dropzoneText={'Drag and drop an IMDb CSV file'}
+						/>
 					</details>
+
+					<TextField
+						id="outlined-basic"
+						label="Search shows"
+						variant="outlined"
+						// onChange={
+						// 	(e) => debouncedSetInput(e.target.value.trim())
+						// }
+						InputProps={{
+							startAdornment: (
+								<InputAdornment position="start">
+									<Movie />
+								</InputAdornment>
+							),
+							endAdornment: (
+								<InputAdornment position="end">
+									<Search
+										className={styles.clickable}
+										// onClick={
+										// 	() => search(searchString)
+										// }
+									/>
+								</InputAdornment>
+							)
+						}}
+					/>
 				</Container>
-				<DropzoneArea
-					Icon={InsertDriveFile as any}
-					filesLimit={1}
-					onChange={onChangeDropzone}
-					dropzoneText={'Drag and drop an IMDb CSV file'}
-				/>
+				<Box className={styles.usersContainer}>
+					{
+						Object.keys(shows).map(id =>
+							<ShowSmall
+								className={styles.userSmall}
+								key={id}
+								show={shows[id]}
+								onPrimaryActionTaken={onShowLiked}
+							/>
+						)
+					}
+				</Box>
 			</Box>
 		</NextOrSkipWrapper>
 	)

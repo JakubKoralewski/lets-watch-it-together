@@ -1,6 +1,8 @@
 /* eslint-disable camelcase */
+import { TmdbMovieId } from '../id'
+
 export interface Movie {
-	id: number;
+	id: TmdbMovieId;
 	title: string;
 	original_title: string;
 	poster_path: string;

@@ -90,7 +90,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 					// and you talk to me to add that user
 					// so I assume you want to accept the friend request
 					if (!isAccept) {
-						console.error('assume accept, but isAccept was false', JSON.stringify(req.query))
+						console.error(
+							'assume accept, but isAccept was false',
+							JSON.stringify(req.query)
+						)
 						res.status(HTTP_STATUS_BAD_REQUEST)
 						res.json({ message: `accept not provided` })
 						res.end()
@@ -119,7 +122,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 								}
 							}
 						)
-						console.log('success accepting friend request', JSON.stringify({ updatedUser }))
+						console.log(
+							'success accepting friend request',
+							JSON.stringify({ updatedUser })
+						)
 						res.end()
 						return
 					}
@@ -175,7 +181,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 						}
 					}
 				)
-				console.log('success sending friend request', JSON.stringify({ updatedUser }))
+				console.log(
+					'success sending friend request',
+					JSON.stringify({ updatedUser })
+				)
 				break
 			}
 			case HTTP2_METHOD_DELETE: {

@@ -1,9 +1,10 @@
 /* eslint-disable camelcase */
 import type { Movie } from './movie';
 import type { TvShow } from './tv_show';
+import { TmdbPersonId } from '../id'
 
 export interface Person {
-	id: number;
+	id: TmdbPersonId;
 	name: string;
 	profile_path: string;
 	adult: boolean;
