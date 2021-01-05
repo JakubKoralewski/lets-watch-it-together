@@ -11,11 +11,13 @@
     "format": "prettier --write .",
     "lint": "eslint . --ext ts --ext tsx --ext js",
     "test": "jest",
-    "test-all": "yarn lint && yarn type-check && yarn test"
+    "test-all": "yarn lint && yarn type-check && yarn test",
+    "dev-seed": "ts-node -P ./prisma/seeding/tsconfig.json ./prisma/seeding/initiateDb.ts"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
     "@prisma/client": "^2.13.1",
     "@reduxjs/toolkit": "^1.5.0",
     "@types/redis": "^2.8.28",

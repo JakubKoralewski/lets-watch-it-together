@@ -8,16 +8,18 @@ import {
 	Button,
 	Container,
 	TextField,
-	InputAdornment,
+	InputAdornment, makeStyles
 } from '@material-ui/core'
+import { Skeleton } from '@material-ui/lab'
 import {
 	AccountCircle,
 	InsertDriveFile,
 	Search,
-	MoreVert,
+	MoreVert
 } from '@material-ui/icons'
-import useDebouncedSearch from '../../lib/utils/useDebouncedSearch'
-import { UserPublicSearchResult } from '../../lib/UserPublic'
+import useDebounced from '../../lib/utils/useDebounced'
+import { UserPublic, UserPublicSearchResult } from '../../lib/UserPublic'
+import UserSmall from '../../components/User/UserSmall'
 
 enum Stages {
 	AddFriends,
@@ -26,28 +28,83 @@ enum Stages {
 }
 
 interface GoToNextStageProps {
-	nextStage(): void
+	nextStage(): void,
+
+	canGoForward?: boolean,
+	currentStage: number,
+	maxStage: number,
+
+	prevStage(): void
 }
 
-function NextOrSkipWrapper({
-	nextStage,
-	children,
-}: PropsWithChildren<GoToNextStageProps>) {
+function NextOrSkipWrapper(
+	{
+		nextStage,
+		children,
+		canGoForward,
+		currentStage,
+		prevStage
+	}: PropsWithChildren<GoToNextStageProps>
+) {
+	const canGoBack = currentStage >= 1
+
 	return (
 		<Container>
 			<div>{children}</div>
-			<Button variant="contained" color="primary" disabled>
+			<Button
+				color="primary"
+				disabled={!canGoBack}
+				onClick={canGoBack ? prevStage : undefined}
+			>
+				BACK
+			</Button>
+			<Button
+				variant="contained"
+				color="primary"
+				disabled={!canGoForward}
+				onClick={canGoForward ? nextStage : undefined}
+			>
 				NEXT
 			</Button>
-			<Button onClick={nextStage} color="secondary">
+			<Button
+				onClick={nextStage}
+				color="secondary"
+			>
 				SKIP
 			</Button>
 		</Container>
 	)
 }
 
-function AddFriends({ nextStage }: GoToNextStageProps) {
-	const search = async (
+const useFriendsStyles = makeStyles((theme) => ({
+	userSmall: {
+		margin: theme.spacing(7)
+	},
+	clickable: {
+		cursor: 'pointer'
+	}
+}))
+
+function AddFriends(
+	{
+		nextStage,
+		currentStage,
+		maxStage,
+		prevStage
+	}: GoToNextStageProps
+) {
+	const styles = useFriendsStyles()
+
+	const [foundUsers, setFoundUsers] =
+		useState<Record<string, UserPublicSearchResult>>({})
+
+	const [searching, setSearching] =
+		useState(false)
+
+	const [searchString, setSearchString] =
+		useState<string>('')
+
+	const fetchSearch = async (
 		searchString: string
 	): Promise<UserPublicSearchResult[]> => {
 		const response = await fetch(
@@ -57,20 +114,60 @@ function AddFriends({ nextStage }: GoToNextStageProps) {
 			console.error('response error', reason)
 		})
 	}
-	const handler = useDebouncedSearch(search)
-	const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-		handler(e.target.value)
+	// const handler = useDebounced(search)
+	const search = async (user: string) => {
+		setSearching(true)
+		const searchResults: UserPublicSearchResult[] =
+			await fetchSearch(user)
+
+		// console.log({searchResults})
+		if (searchResults && searchResults.length > 0) {
+			const mappedResults = {}
+			searchResults.forEach(usr => {
+				mappedResults[usr.id] = usr
+			})
+			setFoundUsers(old =>
+				({ ...old, ...mappedResults })
+			)
+		}
+		setSearching(false)
 	}
 
+	useEffect(() => {
+		setSearching(false)
+		void search(searchString)
+	}, [searchString])
+
+
+	const debouncedSetInput = useDebounced(
+		async (search) => {
+			if (search.length > 1) {
+				setSearchString(search)
+			}
+		}
+	)
+
+	const [primaryActionTaken, setPrimaryActionTaken] = useState(false)
+	const onPrimaryActionTaken = () => setPrimaryActionTaken(true)
+
+
 	return (
-		<NextOrSkipWrapper nextStage={nextStage}>
+		<NextOrSkipWrapper
+			nextStage={nextStage}
+			canGoForward={primaryActionTaken}
+			currentStage={currentStage}
+			maxStage={maxStage}
+			prevStage={prevStage}
+		>
 			<Box>Add Friends</Box>
 			<Box>
 				<TextField
 					id="outlined-basic"
 					label="Search users"
 					variant="outlined"
-					onChange={onInput}
+					onChange={
+						(e) => debouncedSetInput(e.target.value.trim())
+					}
 					InputProps={{
 						startAdornment: (
 							<InputAdornment position="start">
@@ -79,17 +176,56 @@ function AddFriends({ nextStage }: GoToNextStageProps) {
 						),
 						endAdornment: (
 							<InputAdornment position="end">
-								<Search />
+								<Search
+									className={styles.clickable}
+									onClick={
+										() => search(searchString)
+									}
+								/>
 							</InputAdornment>
-						),
+						)
 					}}
 				/>
+			</Box>
+			<Box>
+				{
+					searching &&
+					[0, 1, 2].map(i =>
+						<Skeleton
+							key={i}
+							variant={'rect'}
+							width={300}
+							height={100}
+							className={styles.userSmall}
+						/>
+					)
+				}
+			</Box>
+			<Box>
+				{
+					Object.values(foundUsers)
+						.map(usr =>
+							<UserSmall
+								key={usr.id}
+								user={usr}
+								className={styles.userSmall}
+								onPrimaryActionTaken={onPrimaryActionTaken}
+							/>
+						)
+				}
 			</Box>
 		</NextOrSkipWrapper>
 	)
 }
 
-function AddShows({ nextStage }: GoToNextStageProps) {
+function AddShows(
+	{
+		nextStage,
+		currentStage,
+		maxStage,
+		prevStage
+	}: GoToNextStageProps
+) {
 	const onChangeDropzone = async (files: File[]) => {
 		const imdbIds = (
 			await Promise.all(
@@ -117,32 +253,36 @@ function AddShows({ nextStage }: GoToNextStageProps) {
 						.filter((x) => Boolean(x))
 				})
 			)
-		)
-			.flatMap((x) => {
-				if ('message' in x) {
-					/*TODO: maybe display error to user in snackbar */
-					console.error(x)
-				} else {
-					return x
-				}
-			})
+		).flatMap((x) => {
+			if ('message' in x) {
+				/*TODO: maybe display error to user in snackbar */
+				console.error(x)
+			} else {
+				return x
+			}
+		})
 			.filter((x) => Boolean(x))
 
 		console.log('onchangedropzone', files, imdbIds)
-		if(imdbIds.length > 0) {
+		if (imdbIds.length > 0) {
 			const response = await fetch('/api/shows', {
 				method: 'POST',
 				body: JSON.stringify({
-					imdbIds,
-				}),
+					imdbIds
+				})
 			})
 			const json: number[] = await response.json()
-			console.log({json})
+			console.log({ json })
 		}
 	}
 
 	return (
-		<NextOrSkipWrapper nextStage={nextStage}>
+		<NextOrSkipWrapper
+			nextStage={nextStage}
+			currentStage={currentStage}
+			maxStage={maxStage}
+			prevStage={prevStage}
+		>
 			<Box>Add Shows</Box>
 			<Box>
 				<Container>
@@ -185,22 +325,25 @@ function AddShows({ nextStage }: GoToNextStageProps) {
 		</NextOrSkipWrapper>
 	)
 }
+
 function Finished() {
-	return <>{"That's all! Have fun! You are being redirected."}</>
+	return <>{'That\'s all! Have fun! You are being redirected.'}</>
 }
 
 const stagesMap = {
 	[Stages.AddFriends]: AddFriends,
 	[Stages.AddShows]: AddShows,
-	[Stages.Finished]: Finished,
+	[Stages.Finished]: Finished
 }
 
-export default function Welcome() {
+export default function Welcome(): JSX.Element {
 	const [stage, setStage] = useState<Stages>(0)
 	const router = useRouter()
 
 	const goToNextStage = () =>
 		setStage((x) => Math.min(x + 1, Stages.Finished))
+	const goToPrevStage = () =>
+		setStage((x) => Math.max(x - 1, Stages.AddFriends))
 	const CurrentComponent = stagesMap[stage]
 
 	useEffect(() => {
@@ -214,7 +357,14 @@ export default function Welcome() {
 	return (
 		<Protected>
 			<Layout>
-				{<CurrentComponent nextStage={goToNextStage} />}
+				{
+					<CurrentComponent
+						nextStage={goToNextStage}
+						currentStage={stage}
+						maxStage={Stages.Finished}
+						prevStage={goToPrevStage}
+					/>
+				}
 			</Layout>
 		</Protected>
 	)
