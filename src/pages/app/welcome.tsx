@@ -82,6 +82,9 @@ const useFriendsStyles = makeStyles((theme) => ({
 	},
 	clickable: {
 		cursor: 'pointer'
+	},
+	usersContainer: {
+		display: 'flex'
 	}
 }))
 
@@ -187,7 +190,9 @@ function AddFriends(
 					}}
 				/>
 			</Box>
-			<Box>
+			<Box
+				className={styles.usersContainer}
+			>
 				{
 					searching &&
 					[0, 1, 2].map(i =>
@@ -200,8 +205,6 @@ function AddFriends(
 						/>
 					)
 				}
-			</Box>
-			<Box>
 				{
 					Object.values(foundUsers)
 						.map(usr =>
@@ -226,6 +229,7 @@ function AddShows(
 		prevStage
 	}: GoToNextStageProps
 ) {
+	const styles = useFriendsStyles()
 	const onChangeDropzone = async (files: File[]) => {
 		const imdbIds = (
 			await Promise.all(
@@ -287,7 +291,9 @@ function AddShows(
 			<Box>
 				<Container>
 					<details>
-						<summary>To create an IMDb list:</summary>
+						<summary className={styles.clickable}>
+							To create an IMDb list:
+						</summary>
 						<ol>
 							<li>Sign up on IMDb</li>
 							<li>Click on your profile</li>

@@ -1,6 +1,10 @@
 import { UserPublicSearchResult } from '../../lib/UserPublic'
 import { AccountBox } from '@material-ui/icons'
 import { Avatar, Box, Button, makeStyles, PropTypes } from '@material-ui/core'
+import Card from '@material-ui/core/Card'
+import CardActions from '@material-ui/core/CardActions'
+import CardContent from '@material-ui/core/CardContent'
+import Typography from '@material-ui/core/Typography'
 import { FriendshipTypeResponse } from '../../lib/api/user/[id]/FriendshipType'
 import assertUnreachable from '../../lib/utils/assertUnreachable'
 import { useState } from 'react'
@@ -112,18 +116,29 @@ export default function UserSmall(
 		onPrimaryActionTaken()
 	}
 	return (
-		<Box className={className}>
-			<Avatar alt={user.name} src={user.image} className={classes.large}>
-				{!user.image && <AccountBox />}
-			</Avatar>
-			{user.name}
-			{
-				buttonType(
-					buttonText,
-					onClickWithPrimaryAction,
-					buttonColor
-				)
-			}
-		</Box>
+		<Card className={className}>
+			<CardContent>
+				<Avatar
+					alt={user.name}
+					src={user.image}
+					className={classes.large}
+				>
+					{!user.image && <AccountBox />}
+				</Avatar>
+				<Typography>
+					{user.name}
+				</Typography>
+			</CardContent>
+			<CardActions>
+
+				{
+					buttonType(
+						buttonText,
+						onClickWithPrimaryAction,
+						buttonColor
+					)
+				}
+			</CardActions>
+		</Card>
 	)
 }
