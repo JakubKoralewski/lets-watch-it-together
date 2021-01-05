@@ -19,19 +19,19 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 async function sendFriendRequest(id: number) {
-	await fetch(`/api/user/${id}/friend`, { method: 'POST' })
+	await fetch(`/api/users/${id}/friend`, { method: 'POST' })
 }
 
 async function acceptFriendRequest(id: number) {
-	await fetch(`/api/user/${id}/friend`, { method: 'PATCH' })
+	await fetch(`/api/users/${id}/friend`, { method: 'PATCH' })
 }
 
 async function unfriend(id: number) {
-	await fetch(`/api/user/${id}/friend`, { method: 'DELETE' })
+	await fetch(`/api/users/${id}/friend`, { method: 'DELETE' })
 }
 
 async function cancelFriendRequest(id: number) {
-	await fetch(`/api/user/${id}/friend?cancel=1`, { method: 'DELETE' })
+	await fetch(`/api/users/${id}/friend?cancel=1`, { method: 'DELETE' })
 }
 
 export default function UserSmall(
