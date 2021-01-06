@@ -26,7 +26,9 @@ This includes:
 
 ### Development
 
-This is when you have Node.js and Docker installed.
+This is when you have [Node.js](https://nodejs.org/en/download/) and 
+[Docker](https://docs.docker.com/get-docker/) installed.
+
 Make sure Docker is running.
 Set `NODE_ENV` to `development` to disable PWA.
 
