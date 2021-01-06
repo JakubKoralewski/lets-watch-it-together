@@ -351,6 +351,8 @@ function AddShows(
 					<TextField
 						id="outlined-basic"
 						label="Search shows"
+						title={'Not implemented yet 🤪'}
+						disabled={true}
 						variant="outlined"
 						// onChange={
 						// 	(e) => debouncedSetInput(e.target.value.trim())
