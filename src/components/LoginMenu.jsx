@@ -18,11 +18,11 @@ class LoginMenu extends React.Component {
       }
 	  
 	  handleFacebookLogin(){
-		()=>this.props.onClickFacebook()
+		()=>this.props.onClickFacebook();
 	  }
 	  
 	  handlePhoneLogin(){
-		  ()=>this.props.onClickPhone()
+		  ()=>this.props.onClickPhone();
 	  }
 }
 
