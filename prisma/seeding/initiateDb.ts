@@ -1,4 +1,5 @@
-import prisma from '../../src/lib/prisma/prisma'
+import { PrismaClient } from '@prisma/client'
+
 import {User} from '@prisma/client'
 
 const users: Pick<User, 'name' | 'image'>[] = [
@@ -12,7 +13,7 @@ const users: Pick<User, 'name' | 'image'>[] = [
 	}
 ]
 
-export default async function initiateDb(): Promise<void> {
+export default async function initiateDb(prisma: PrismaClient): Promise<void> {
 	for(const user of users) {
 		const foundUser: User | null = await prisma.user.findFirst({
 			where: {
@@ -38,7 +39,30 @@ export default async function initiateDb(): Promise<void> {
 }
 
 if(require.main === module) {
-	initiateDb().catch(err => {
+	const fileIndex = process.argv.findIndex((val) => val.endsWith('initiateDb.ts'))
+	const optionalArguments = process.argv.slice(fileIndex + 1)
+	console.log({optionalArguments})
+	let dbUrl: string
+	if(optionalArguments.length >= 1) {
+		if(optionalArguments.length === 1) {
+			dbUrl = optionalArguments[0]
+			if(!dbUrl.startsWith('postgres://')) {
+				throw Error('invalid db url')
+			} else {
+				console.log("valid db url provided. will use")
+			}
+		} else {
+			throw Error('invalid arguments')
+		}
+	}
+	const prisma = new PrismaClient(dbUrl ? {
+		datasources: {
+			db: {
+				url: dbUrl
+			}
+		}
+	} : undefined)
+	initiateDb(prisma).catch(err => {
 		throw err
 	}).then(() => {
 		console.log("Seeding finished without error")
