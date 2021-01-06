@@ -176,7 +176,7 @@ function AddFriends(
 			<Box>
 				<TextField
 					id="outlined-basic"
-					label="Search users"
+					label={'Search users (type "my")'}
 					variant="outlined"
 					onChange={
 						(e) => debouncedSetInput(e.target.value.trim())
