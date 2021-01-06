@@ -8,6 +8,7 @@ import { stripDetails, StrippedShowDetails } from
 	'lib/api/shows/[id]/StrippedShowDetails'
 import { ImdbMediaId } from 'lib/tmdb/api/id'
 import { TMDBTvGetDetailsResponse } from 'lib/tmdb/api/tv_get_details'
+import { mapShowLiked } from 'lib/api/shows/[id]/isShowLiked'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,
@@ -64,17 +65,33 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
 						if (req.query['small']) {
 							console.log('small')
-							const strippedDetails: StrippedShowDetails[] =
-								details.map(stripDetails)
+							const strippedDetailsWithLikesResult = await Promise.allSettled(
+								(details as TMDBTvGetDetailsResponse[])
+									// strip full details to its small form
+									.map(stripDetails)
+									// add the information whether the show is liked
+									.map(mapShowLiked(session.user['id'] as number))
+							)
+							const strippedDetailsWithLikes: StrippedShowDetails[] =
+								strippedDetailsWithLikesResult
+									.flatMap(result => {
+										// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap#For_adding_and_removing_items_during_a_map
+										if (result.status === 'rejected') {
+											console.error('error in mapping show details to have likes')
+											return []
+										} else {
+											return [result.value]
+										}
+									})
 
 							console.log(
 								JSON.stringify(
-									{ strippedDetails },
+									{ strippedDetailsWithLikes },
 									undefined,
 									2
 								)
 							)
-							res.json(strippedDetails)
+							res.json(strippedDetailsWithLikes)
 						} else if (req.query['all']) {
 							res.json(details)
 						} else {
@@ -105,7 +122,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 				} else {
 					console.error('wrong data invalid json key')
 					res.status(HTTP_STATUS_BAD_REQUEST)
-					res.json({message: `wrong data invalid json key`})
+					res.json({ message: `wrong data invalid json key` })
 					res.end()
 					return
 				}

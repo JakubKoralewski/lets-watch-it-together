@@ -4,6 +4,8 @@ import { Person } from './objects/person'
 import { Season } from './objects/season'
 import { Company } from './objects/company'
 import { Collection } from './objects/collection'
+import { TmdbMediaType } from '@prisma/client'
+
 
 export enum TmdbIdType {
 	Movie,
@@ -11,6 +13,12 @@ export enum TmdbIdType {
 	Person,
 	Collection,
 	Season
+}
+
+export const privateIdToPrismaIdTypeMap = {
+	[TmdbIdType.Movie]: TmdbMediaType.MOVIE,
+	[TmdbIdType.Show]: TmdbMediaType.SHOW,
+	[TmdbIdType.Season]: TmdbMediaType.SEASON
 }
 
 export interface TmdbId {
@@ -53,7 +61,11 @@ export type TmdbIdSerialized =
 	TmdbMovieIdSerialized | TmdbShowIdSerialized |
 	TmdbPersonIdSerialized | TmdbSeasonIdSerialized
 
-type ObjectsWithIds = Movie | TvShow | Person | Season | Collection | Company
+export type ObjectsWithIds =
+	Movie | TvShow | Person |
+	Season | Collection | Company
+
+export type ObjectsWithTmdbIds = Omit<ObjectsWithIds, 'id'> & { id: TmdbId }
 /*
 export function serializeId(
 	object: Movie

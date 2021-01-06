@@ -3,6 +3,7 @@ import got, { Response as GOTResponse } from 'got'
 import { TMDBFindResponse } from './api/find'
 import { TMDBTvGetDetailsResponse } from './api/tv_get_details'
 import { TvShowDetails } from './api/objects/tv_show_details'
+import { IncomingHttpHeaders } from 'http2'
 
 export type Find = `find/${string}`
 export type FindOptions = { external_source: 'imdb_id' | string }
@@ -34,19 +35,34 @@ export type TmdbPathOptions<T extends SupportedTmdbPaths> = (
 
 export type HTTPMethod = 'GET' | 'POST'
 
-enum TmdbErrorType {
+export enum TmdbErrorType {
 	Redis,
 	Tmdb,
 	Http,
 }
 
-class TmdbError extends Error {
+export type TmdbErrorTmdbResponse = {
+	body: string,
+	statusCode: number,
+	headers: IncomingHttpHeaders
+	// headers: response.rawHeaders
+}
+
+
+export class TmdbError<T extends TmdbErrorType> extends Error {
 	constructor(
-		public tmdbErrorType: TmdbErrorType,
-		public tmdbMessage: string
+		public tmdbErrorType: T,
+		public tmdbMessage: T extends TmdbErrorType.Tmdb ?
+			TmdbErrorTmdbResponse : string
 	) {
 		super(`TmdbError: [${tmdbErrorType}]: ${tmdbMessage}`)
 	}
+}
+
+export function isTmdbError<T extends TmdbErrorType>(err: unknown):
+	err is TmdbError<T>
+{
+	return err && typeof err === 'object' && 'tmdbMessage' in err
 }
 
 class TmdbClient {
@@ -152,11 +168,13 @@ class TmdbClient {
 
 			throw new TmdbError(
 				TmdbErrorType.Tmdb,
-				JSON.stringify({
+				{
 					body: response.body,
 					statusCode: response.statusCode,
-					headers: response.rawHeaders
-				})
+					headers: response.headers
+
+					// headers: response.rawHeaders
+				}
 			)
 		}
 

@@ -1,13 +1,9 @@
-import { UserPublicSearchResult } from '../../lib/UserPublic'
-import { AccountBox } from '@material-ui/icons'
 import { Avatar, Box, Button, makeStyles, PropTypes } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
-import { FriendshipTypeResponse } from '../../lib/api/user/[id]/FriendshipType'
-import assertUnreachable from '../../lib/utils/assertUnreachable'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StrippedShowDetails } from '../../lib/api/shows/[id]/StrippedShowDetails'
 
 export interface ShowSmallProps {
@@ -22,9 +18,20 @@ const useStyles = makeStyles((theme) => ({
 		height: theme.spacing(7)
 	},
 	bold: {
-		fontWeight: "bold"
+		fontWeight: 'bold'
 	}
 }))
+
+async function sendShowLike(showId: number, liked: boolean) {
+	await fetch(
+		`/api/shows/${showId}/like`,
+		{
+			method: liked ?
+				'POST' :
+				'DELETE'
+		}
+	)
+}
 
 
 export default function ShowSmall(
@@ -35,11 +42,26 @@ export default function ShowSmall(
 	}: ShowSmallProps
 ) {
 	const classes = useStyles()
-	console.log({userSmall: {show}})
-	// const onClickWithPrimaryAction = async () => {
-	// 	await onClick()
-	// 	onPrimaryActionTaken()
-	// }
+	console.log({ userSmall: { show } })
+	const [liked, setLiked] = useState(show.liked)
+	/**
+	 * https://medium.com/anna-coding/the-way-to-check-if-its-the-first-time-for-useeffect-function-is-being-run-in-react-hooks-170520554067
+	 * We don't want it to be sent on first render
+	 */
+	const firstUpdate = useRef(true)
+	useEffect(() => {
+		if(firstUpdate.current) {
+			firstUpdate.current = false
+			return;
+		}
+		sendShowLike(show.id.id, liked).then(() => {
+			console.log({
+				liked,
+				id: show.id.id
+			})
+		})
+		onPrimaryActionTaken()
+	}, [liked])
 	return (
 		<Card className={className}>
 			<CardContent>
@@ -53,8 +75,14 @@ export default function ShowSmall(
 				</Typography>
 			</CardContent>
 			<CardActions>
-				<Button>
-					Like
+				<Button
+					variant={!liked ? 'contained' : 'outlined'}
+					color={!liked ? 'primary' : 'secondary'}
+					onClick={() => setLiked(liked => !liked)}
+				>
+					{
+						liked ? 'Unlike' : 'Like'
+					}
 				</Button>
 
 				{/*{*/}

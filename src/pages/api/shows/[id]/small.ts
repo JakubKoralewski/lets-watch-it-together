@@ -2,8 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/client'
 import { constants } from 'http2'
 import getShowDetails from 'lib/api/shows/getShowDetails'
-import { stripDetails } from 'lib/api/shows/[id]/StrippedShowDetails'
-import { TmdbIdType } from 'lib/tmdb/api/id'
+import { stripDetails, StrippedShowDetails } from 'lib/api/shows/[id]/StrippedShowDetails'
+import { TmdbId, TmdbIdType } from 'lib/tmdb/api/id'
+import { mapShowLiked } from '../../../../lib/api/shows/[id]/isShowLiked'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,
@@ -14,8 +15,9 @@ const {
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
 	const session = await getSession({ req })
-	console.log('get small of tmdb id', req.query.id)
+	console.log(`/api/shows/${req.query.id}/small`)
 	if (session) {
+		const userId: number = session.user['id']
 		// Signed in
 		let showTmdbId: number
 		try {
@@ -34,8 +36,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 						type: TmdbIdType.Show
 					}
 				)
-				const strippedDetails = stripDetails(details)
-				res.json(strippedDetails)
+				const strippedDetails =
+					stripDetails(details)
+				const mappingFunc = mapShowLiked<typeof strippedDetails>(userId)
+				const strippedDetailsWithLiked: StrippedShowDetails =
+					await mappingFunc(strippedDetails)
+				res.json(strippedDetailsWithLiked)
 				res.end()
 				return
 			}

@@ -1,19 +1,27 @@
-import tmdb, { TmdbPath, TvGetDetails } from 'lib/tmdb/tmdb'
+import tmdb, { isTmdbError, TmdbErrorTmdbResponse, TmdbErrorType, TmdbPath, TvGetDetails } from 'lib/tmdb/tmdb'
 import { TMDBTvGetDetailsResponse } from '../../tmdb/api/tv_get_details'
 import { TmdbId, TmdbIdType } from '../../tmdb/api/id'
 
-enum GetShowDetailsErrorType {
+export enum GetShowDetailsErrorType {
 	Other,
-	NotFound
+	Tmdb,
+	NotFound,
+	NotAShowId
 }
 
-class GetShowDetailsError extends Error {
+export class GetShowDetailsError extends Error {
 	constructor(
 		public errorType: GetShowDetailsErrorType,
-		public mapMessage?: string
+		public mapMessage?: string,
 	) {
 		super(mapMessage)
 	}
+}
+
+export function isGetShowDetailsError(err: unknown):
+	err is GetShowDetailsError
+{
+	return Boolean(err && typeof err === 'object' && 'mapMessage' in err);
 }
 
 export default async function getShowDetails(
@@ -21,7 +29,7 @@ export default async function getShowDetails(
 ): Promise<TMDBTvGetDetailsResponse> {
 	if (showTmdbId.type !== TmdbIdType.Show) {
 		throw new GetShowDetailsError(
-			GetShowDetailsErrorType.Other,
+			GetShowDetailsErrorType.NotAShowId,
 			`can only get tv show details, got` +
 			`${JSON.stringify(showTmdbId)}`
 		)
@@ -42,10 +50,26 @@ export default async function getShowDetails(
 			}
 		}
 	} catch (e) {
-		throw new GetShowDetailsError(
-			GetShowDetailsErrorType.Other,
-			JSON.stringify(e)
-		)
+		if(isTmdbError(e)) {
+			if(e.tmdbErrorType === TmdbErrorType.Tmdb) {
+				if((e.tmdbMessage as TmdbErrorTmdbResponse).statusCode === 404) {
+					throw new GetShowDetailsError(
+						GetShowDetailsErrorType.NotFound,
+						JSON.stringify(e)
+					)
+				}
+			} else {
+				throw new GetShowDetailsError(
+					GetShowDetailsErrorType.Tmdb,
+					JSON.stringify(e)
+				)
+			}
+		} else {
+			throw new GetShowDetailsError(
+				GetShowDetailsErrorType.Other,
+				JSON.stringify(e)
+			)
+		}
 	}
 	return response
 }
