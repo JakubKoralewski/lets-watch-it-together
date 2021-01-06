@@ -40,6 +40,7 @@ interface GoToNextStageProps {
 
 	prevStage(): void
 }
+
 /**
  * TODO: https://material-ui.com/components/steppers/
  */
@@ -403,9 +404,8 @@ const stagesMap = {
 	[Stages.Finished]: Finished
 }
 
-export default function Welcome(): JSX.Element {
+export function WelcomeInner({onFinish}: {onFinish: () => void}): JSX.Element {
 	const [stage, setStage] = useState<Stages>(0)
-	const router = useRouter()
 
 	const goToNextStage = () =>
 		setStage((x) => Math.min(x + 1, Stages.Finished))
@@ -415,23 +415,35 @@ export default function Welcome(): JSX.Element {
 
 	useEffect(() => {
 		if (stage === Stages.Finished) {
-			setTimeout(() => {
-				router.push('/app')
-			}, 1000)
+			onFinish()
 		}
 	}, [stage])
 
 	return (
+		<>
+			{
+				<CurrentComponent
+					nextStage={goToNextStage}
+					currentStage={stage}
+					maxStage={Stages.Finished}
+					prevStage={goToPrevStage}
+				/>
+			}
+		</>
+	)
+}
+
+export default function Welcome(): JSX.Element {
+	const router = useRouter()
+	const onFinish = () => {
+		setTimeout(() => {
+			router.push('/app')
+		}, 1000)
+	}
+	return (
 		<Protected>
 			<Layout>
-				{
-					<CurrentComponent
-						nextStage={goToNextStage}
-						currentStage={stage}
-						maxStage={Stages.Finished}
-						prevStage={goToPrevStage}
-					/>
-				}
+				<WelcomeInner onFinish={onFinish} />
 			</Layout>
 		</Protected>
 	)

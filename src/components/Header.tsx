@@ -178,8 +178,8 @@ const Header: React.FC = () => {
 			open={isMenuOpen}
 			onClose={handleMenuClose}
 		>
-			<MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-			<MenuItem onClick={handleMenuClose}>My account</MenuItem>
+			<MenuItem onClick={handleMenuClose} disabled>Profile</MenuItem>
+			<MenuItem onClick={handleMenuClose} disabled>My account</MenuItem>
 			<MenuItem onClick={() => signOut({ callbackUrl: '/' })}>Log out</MenuItem>
 		</Menu>
 	)
@@ -234,7 +234,7 @@ const Header: React.FC = () => {
 						variant="h6"
 						noWrap
 					>
-						Let's Watch It Together
+						{"Let's Watch It Together"}
 					</Typography>
 					<div className={classes.search}>
 						<div className={classes.searchIcon}>
