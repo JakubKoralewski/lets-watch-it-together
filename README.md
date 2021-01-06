@@ -26,7 +26,9 @@ This includes:
 
 ### Development
 
-This is when you have Node.js and Docker installed.
+This is when you have [Node.js](https://nodejs.org/en/download/) and 
+[Docker](https://docs.docker.com/get-docker/) installed.
+
 Make sure Docker is running.
 Set `NODE_ENV` to `development` to disable PWA.
 
@@ -60,13 +62,16 @@ Set `NODE_ENV` to `development` to disable PWA.
 3. Run migrations:
 
     Only required first time the database is run, or when new migrations
-    are added. Since the Docker setup in `docker-compose.yml` currently does
-    not use volumes for peristence right now this may need to be done after
-    every `docker-compose up`?
+    are added.
 
     ```bash
     $ npx prisma migrate dev --preview-feature
     ```
+   
+   You can also add some dummy users if you want:
+   ```bash
+   $ npm run dev-seed
+   ```
 
 4. Start the Next.js app in development mode (with live reload):
 
@@ -120,6 +125,9 @@ $ npx prisma migrate dev --name a-descriptive-name-of-the-thing-you-changed --pr
 
 where `a-descriptive-name-of-the-thing-you-changed` is a descriptive name of the thing you changed
 inside the database schema, e.g. `dropped-the-database-because-its-stupid`.
+
+Use the `--create-only` flag when running `migrate dev` if you want to change the generated SQL 
+before applying it to make some database specific changes that Prisma does not yet support.
 
 See the [Prisma Migrate documentation](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 for more details.

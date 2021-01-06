@@ -1,6 +1,8 @@
 /* eslint-disable camelcase */
+import { TmdbCollectionId } from '../id'
+
 export interface Collection {
-	id: number;
+	id: TmdbCollectionId;
 	backdrop_path: string;
 	name: string;
 	poster_path: string;

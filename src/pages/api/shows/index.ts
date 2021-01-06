@@ -1,18 +1,27 @@
 import { getSession } from 'next-auth/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { constants } from 'http2'
-import { ApiShowsRequest } from '../../../lib/api/shows/ApiShowsRequest'
-import mapImdbIdToTmdbId from '../../../lib/api/shows/mapImdbIdToTmdbId'
+import { ApiShowsRequest } from 'lib/api/shows/ApiShowsRequest'
+import mapImdbIdToTmdbId from 'lib/api/shows/mapImdbIdToTmdbId'
+import getShowDetails from 'lib/api/shows/getShowDetails'
+import { stripDetails, StrippedShowDetails } from
+	'lib/api/shows/[id]/StrippedShowDetails'
+import { ImdbMediaId } from 'lib/tmdb/api/id'
+import { TMDBTvGetDetailsResponse } from 'lib/tmdb/api/tv_get_details'
+import { mapShowLiked } from 'lib/api/shows/[id]/isShowLiked'
+
 const {
 	HTTP_STATUS_BAD_REQUEST,
 	HTTP_STATUS_UNAUTHORIZED,
+	HTTP2_METHOD_POST
 } = constants
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
 	const session = await getSession({ req })
+	console.log('/api/shows')
 	if (session) {
 		switch (req.method) {
-			case 'POST': {
+			case HTTP2_METHOD_POST: {
 				let json: ApiShowsRequest
 				try {
 					json = JSON.parse(req.body)
@@ -22,16 +31,76 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 					return
 				}
 				if ('imdbIds' in json) {
+					console.log('imdbids')
 					if (json.imdbIds.length === 0) {
 						res.status(HTTP_STATUS_BAD_REQUEST)
 						res.end()
 						return
 					}
 					const tmdbIds = await Promise.allSettled(
-						json.imdbIds.map((imdbId) => mapImdbIdToTmdbId(imdbId))
+						json.imdbIds.map(
+							(imdbId) =>
+								mapImdbIdToTmdbId(imdbId as ImdbMediaId)
+						)
 					)
-					console.log('tmdbIds', tmdbIds)
-					res.json(tmdbIds)
+					if (req.query['convert']) {
+						console.log('convert')
+						const details: TMDBTvGetDetailsResponse[] = (
+							await Promise.allSettled(
+								tmdbIds.map(tmdbId => {
+									if (tmdbId.status === 'fulfilled') {
+										return getShowDetails(tmdbId.value)
+									} else {
+										console.error({ tmdbId })
+									}
+								}).filter(x => Boolean(x))
+							)
+						).map(detail => {
+							if (detail.status === 'fulfilled') {
+								return detail.value
+							} else {
+								console.error({ detail })
+							}
+						}).filter(x => Boolean(x))
+
+						if (req.query['small']) {
+							console.log('small')
+							const strippedDetailsWithLikesResult = await Promise.allSettled(
+								(details as TMDBTvGetDetailsResponse[])
+									// strip full details to its small form
+									.map(stripDetails)
+									// add the information whether the show is liked
+									.map(mapShowLiked(session.user['id'] as number))
+							)
+							const strippedDetailsWithLikes: StrippedShowDetails[] =
+								strippedDetailsWithLikesResult
+									.flatMap(result => {
+										// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap#For_adding_and_removing_items_during_a_map
+										if (result.status === 'rejected') {
+											console.error('error in mapping show details to have likes')
+											return []
+										} else {
+											return [result.value]
+										}
+									})
+
+							console.log(
+								JSON.stringify(
+									{ strippedDetailsWithLikes },
+									undefined,
+									2
+								)
+							)
+							res.json(strippedDetailsWithLikes)
+						} else if (req.query['all']) {
+							res.json(details)
+						} else {
+							console.error('invalid')
+						}
+					} else {
+						console.log('tmdbIds', tmdbIds)
+						res.json(tmdbIds)
+					}
 					res.end()
 					return
 				} else if ('imdbId' in json) {
@@ -42,11 +111,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 						res.end()
 					}
 */
-				} else if ('tmdbId' in json) {
-					/*todo*/
+				} else if ('tmdbIds' in json) {
+					if (json.tmdbIds.length === 0) {
+						res.status(HTTP_STATUS_BAD_REQUEST)
+						res.end()
+						return
+					}
+					console.error('TODO: unimplemented')
+					const tmdbIds = json.tmdbIds
 				} else {
-					console.error('wrong data')
+					console.error('wrong data invalid json key')
 					res.status(HTTP_STATUS_BAD_REQUEST)
+					res.json({ message: `wrong data invalid json key` })
 					res.end()
 					return
 				}
@@ -54,7 +130,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 			}
 		}
 		// Signed in
-		console.log('Session', JSON.stringify(session, null, 2))
+		console.log(
+			'Session',
+			JSON.stringify(session, null, 2)
+		)
 	} else {
 		// Not Signed in
 		res.status(HTTP_STATUS_UNAUTHORIZED)

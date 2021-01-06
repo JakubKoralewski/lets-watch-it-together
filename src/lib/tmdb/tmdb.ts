@@ -1,40 +1,73 @@
 import redis, { RedisWrapperClass } from '../redis/redis-wrapper'
 import got, { Response as GOTResponse } from 'got'
 import { TMDBFindResponse } from './api/find'
+import { TMDBTvGetDetailsResponse } from './api/tv_get_details'
+import { TvShowDetails } from './api/objects/tv_show_details'
+import { IncomingHttpHeaders } from 'http2'
 
 export type Find = `find/${string}`
 export type FindOptions = { external_source: 'imdb_id' | string }
 export type FindResult = TMDBFindResponse
+
+export type TvGetDetails = `tv/${number}`
+export type TvGetDetailsOptions = Record<string, never>
+export type TvGetDetailsResult = TvShowDetails
+
 export type GlobalTmdbOptions = { language?: string }
-export type SupportedTmdbPaths = Find
+export type SupportedTmdbPaths = Find | TvGetDetails
+
 export type TmdbPath<T extends SupportedTmdbPaths> = `/${T | string}`
-export type TmdbPathOptions<
-	T extends SupportedTmdbPaths
-> = (T extends Find
-	? { o: FindOptions; r: FindResult }
-	: T extends string
-	? { o: Record<string, string>; r: any }
-	: { o: never; r: never }) & { o: GlobalTmdbOptions }
+
+export type TmdbPathOptions<T extends SupportedTmdbPaths> = (
+	T extends Find ? {
+		o: FindOptions;
+		r: FindResult
+	} : T extends TvGetDetails ? {
+		o: TvGetDetailsOptions,
+		r: TvGetDetailsResult
+	} : T extends string ? {
+		o: Record<string, string>;
+		r: any
+	} : {
+		o: never;
+		r: never
+	}) & { o: GlobalTmdbOptions }
 
 export type HTTPMethod = 'GET' | 'POST'
 
-enum TmdbErrorType {
+export enum TmdbErrorType {
 	Redis,
 	Tmdb,
 	Http,
 }
 
-class TmdbError extends Error {
+export type TmdbErrorTmdbResponse = {
+	body: string,
+	statusCode: number,
+	headers: IncomingHttpHeaders
+	// headers: response.rawHeaders
+}
+
+
+export class TmdbError<T extends TmdbErrorType> extends Error {
 	constructor(
-		public tmdbErrorType: TmdbErrorType,
-		public tmdbMessage: string
+		public tmdbErrorType: T,
+		public tmdbMessage: T extends TmdbErrorType.Tmdb ?
+			TmdbErrorTmdbResponse : string
 	) {
 		super(`TmdbError: [${tmdbErrorType}]: ${tmdbMessage}`)
 	}
 }
 
+export function isTmdbError<T extends TmdbErrorType>(err: unknown):
+	err is TmdbError<T>
+{
+	return err && typeof err === 'object' && 'tmdbMessage' in err
+}
+
 class TmdbClient {
 	private apiString: string
+
 	constructor(
 		private apiKey: string,
 		private redis: RedisWrapperClass,
@@ -42,6 +75,7 @@ class TmdbClient {
 	) {
 		this.apiString = 'https://api.themoviedb.org/3'
 	}
+
 	private optionsToQueryString<T extends SupportedTmdbPaths>(
 		options: TmdbPathOptions<T>['o']
 	) {
@@ -57,6 +91,7 @@ class TmdbClient {
 		})
 		return queryString
 	}
+
 	private makeApiString<T extends SupportedTmdbPaths>(
 		path: TmdbPath<T>,
 		options: TmdbPathOptions<T>['o']
@@ -64,12 +99,19 @@ class TmdbClient {
 		return (
 			this.apiString +
 			path +
-			this.optionsToQueryString({ ...options, api_key: this.apiKey })
+			this.optionsToQueryString(
+				{
+					...options,
+					api_key: this.apiKey
+				}
+			)
 		)
 	}
+
 	private static getRedisKey(apiUrl: string, method: HTTPMethod) {
 		return `tmdb/${method}/${apiUrl}`
 	}
+
 	public async call<T extends SupportedTmdbPaths>(
 		path: TmdbPath<T>,
 		options: TmdbPathOptions<T>['o'],
@@ -84,7 +126,10 @@ class TmdbClient {
 		try {
 			cache = await this.redis.get(redisKey)
 		} catch {
-			throw new TmdbError(TmdbErrorType.Redis, `get ${redisKey}`)
+			throw new TmdbError(
+				TmdbErrorType.Redis,
+				`get ${redisKey}`
+			)
 		}
 
 		if (cache) {
@@ -97,7 +142,7 @@ class TmdbClient {
 		let response: GOTResponse<string>
 		try {
 			response = await got(apiUrl, {
-				method: method,
+				method: method
 			})
 		} catch (e) {
 			throw new TmdbError(
@@ -107,7 +152,7 @@ class TmdbClient {
 		}
 
 		if (response.statusCode < 300) {
-			/* Ok reponse from TMDb */
+			/* Ok response from TMDb */
 
 			/** No need to really await */
 			void this.redis.set(redisKey, response.body).catch((reason) => {
@@ -123,11 +168,13 @@ class TmdbClient {
 
 			throw new TmdbError(
 				TmdbErrorType.Tmdb,
-				JSON.stringify({
+				{
 					body: response.body,
 					statusCode: response.statusCode,
-					headers: response.rawHeaders,
-				})
+					headers: response.headers
+
+					// headers: response.rawHeaders
+				}
 			)
 		}
 

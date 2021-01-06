@@ -1,5 +1,6 @@
 import tmdb, { Find, TmdbPath } from 'lib/tmdb/tmdb'
 import { TMDBFindResponse } from '../../tmdb/api/find'
+import { ImdbMediaId, TmdbId, TmdbIdType, TmdbMovieId, TmdbShowId } from '../../tmdb/api/id'
 
 enum MapImdbIdToTmdbIdErrorType {
 	NoTTAtBeginning,
@@ -17,8 +18,8 @@ class MapImdbIdToTmdbIdError extends Error {
 }
 
 export default async function mapImdbIdToTmdbId(
-	imdbId: string
-): Promise<TMDBFindResponse> {
+	imdbId: ImdbMediaId
+): Promise<TmdbId> {
 	if (imdbId.slice(0, 2) !== 'tt') {
 		throw new MapImdbIdToTmdbIdError(
 			MapImdbIdToTmdbIdErrorType.NoTTAtBeginning
@@ -36,12 +37,21 @@ export default async function mapImdbIdToTmdbId(
 			JSON.stringify(e)
 		)
 	}
-	const possibleResponses  = ['movie_results', 'tv_results']
-	for(const possibleResponse of possibleResponses) {
+
+	const possibleResponses  = [
+		['movie_results', TmdbIdType.Movie],
+		['tv_results', TmdbIdType.Show]
+	] as const
+
+	for(const [possibleResponse, type] of possibleResponses) {
 		if(response[possibleResponse].length > 0) {
-			return response[possibleResponse][0].id
+			return {
+				id: response[possibleResponse][0].id,
+				type
+			}
 		}
 	}
+
 	throw new MapImdbIdToTmdbIdError(
 		MapImdbIdToTmdbIdErrorType.NotFound
 	)

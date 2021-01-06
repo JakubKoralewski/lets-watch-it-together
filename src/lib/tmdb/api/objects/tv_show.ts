@@ -1,6 +1,8 @@
 /* eslint-disable camelcase */
+import { TmdbShowId } from '../id'
+
 export interface TvShow {
-	id: number;
+	id: TmdbShowId;
 	name: string;
 	original_name: string;
 	poster_path: string;
@@ -12,5 +14,6 @@ export interface TvShow {
 	genre_ids: number[];
 	original_language: string;
 	vote_count: number;
-	first_air_date: Date;
+	/** yyyy-mm-dd */
+	first_air_date: string;
 }

@@ -1,14 +1,23 @@
 // import { useSession } from 'next-auth/client'
 import Protected from '../../components/Protected'
 import Layout from '../../components/Layout'
+import { WelcomeInner } from './welcome'
+import { useState } from 'react'
 
 export default function App() {
-	// const [session, loading] = useSession()
+	const [finished, setFinished] = useState(false)
 	return (
 		<Protected>
 			<Layout>
-				<h1>Protected Page</h1>
-				<p>You can view this page because you are signed in.</p>
+				{
+					!finished ?
+						<WelcomeInner
+							onFinish={() => setFinished(true)}
+						/> :
+						<>
+							this is a work in progress wait till we add more stuff pls
+						</>
+				}
 			</Layout>
 		</Protected>
 	)

@@ -3,7 +3,7 @@ export type ApiShowsRequest = {
 } | {
 	imdbId: string;
 } | {
-	tmdbId: string
+	tmdbIds: string
 }
 
 export const enum ApiTmdbMediaType {
