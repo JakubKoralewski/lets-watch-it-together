@@ -4,10 +4,12 @@ import { useRouter } from 'next/router'
 import Layout from '../../components/Layout'
 import { AddFriends } from '../../components/pages/welcome/AddFriends'
 import { AddShows } from '../../components/pages/welcome/AddShows'
+import { AddMeeting } from '../../components/pages/welcome/AddMeeting'
 
 enum Stages {
 	AddFriends,
 	AddShows,
+	AddMeeting,
 	Finished,
 }
 
@@ -15,12 +17,22 @@ function Finished() {
 	return <>{'That\'s all! Have fun! You are being redirected.'}</>
 }
 
+/**
+ * Maps from each @see {@link Stages}
+ * to a component responsible for that Stage.
+ */
 const stagesMap = {
 	[Stages.AddFriends]: AddFriends,
 	[Stages.AddShows]: AddShows,
+	[Stages.AddMeeting]: AddMeeting,
 	[Stages.Finished]: Finished
 }
 
+/**
+ * Right now this is also used by the index page
+ * cause we have nothing else to show there anyway,
+ * so thats why this is a separate function.
+ */
 export function WelcomeInner({onFinish}: {onFinish: () => void}): JSX.Element {
 	const [stage, setStage] = useState<Stages>(0)
 
