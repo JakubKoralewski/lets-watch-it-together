@@ -1,9 +1,9 @@
 import redis, { RedisWrapperClass } from '../redis/redis-wrapper'
-import got, { Response as GOTResponse } from 'got'
+import got, { Response as GOTResponse, Method as GOTMethod } from 'got'
 import { TMDBFindResponse } from './api/find'
-import { TMDBTvGetDetailsResponse } from './api/tv_get_details'
 import { TvShowDetails } from './api/objects/tv_show_details'
 import { IncomingHttpHeaders } from 'http2'
+import HTTPMethod from '../utils/HTTPMethod'
 
 export type Find = `find/${string}`
 export type FindOptions = { external_source: 'imdb_id' | string }
@@ -32,8 +32,6 @@ export type TmdbPathOptions<T extends SupportedTmdbPaths> = (
 		o: never;
 		r: never
 	}) & { o: GlobalTmdbOptions }
-
-export type HTTPMethod = 'GET' | 'POST'
 
 export enum TmdbErrorType {
 	Redis,
@@ -115,7 +113,7 @@ class TmdbClient {
 	public async call<T extends SupportedTmdbPaths>(
 		path: TmdbPath<T>,
 		options: TmdbPathOptions<T>['o'],
-		method: HTTPMethod = 'GET'
+		method: HTTPMethod = HTTPMethod.GET
 	): Promise<TmdbPathOptions<T>['r']> {
 		/** Construct the url for request */
 		const apiUrl = this.makeApiString(path, options)
@@ -142,7 +140,7 @@ class TmdbClient {
 		let response: GOTResponse<string>
 		try {
 			response = await got(apiUrl, {
-				method: method
+				method: method as GOTMethod
 			})
 		} catch (e) {
 			throw new TmdbError(
