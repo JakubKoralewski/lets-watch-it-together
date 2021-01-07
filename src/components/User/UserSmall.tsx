@@ -1,13 +1,15 @@
 import { UserPublicSearchResult } from '../../lib/UserPublic'
 import { AccountBox } from '@material-ui/icons'
-import { Avatar, Box, Button, makeStyles, PropTypes } from '@material-ui/core'
+import { Avatar, makeStyles } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
 import { FriendshipTypeResponse } from '../../lib/api/user/[id]/FriendshipType'
-import assertUnreachable from '../../lib/utils/assertUnreachable'
 import { useState } from 'react'
+import ToggleFriendButton from './ToggleFriendButton'
+import CreateMeetingButton from './CreateMeetingButton'
+import { isFriend } from './isFriend'
 
 export interface UserSmallProps {
 	user: UserPublicSearchResult,
@@ -38,83 +40,18 @@ async function cancelFriendRequest(id: number) {
 	await fetch(`/api/users/${id}/friend?cancel=1`, { method: 'DELETE' })
 }
 
+
+
 export default function UserSmall(
 	{
 		user,
 		className,
 		onPrimaryActionTaken
 	}: UserSmallProps
-) {
+): JSX.Element {
 	const [userStatus, setUserStatus] =
 		useState<FriendshipTypeResponse>(user.status)
 	const classes = useStyles()
-	const buttonType: (
-		text: string,
-		onClick: () => void,
-		color: PropTypes.Color
-	) => JSX.Element =
-		(text, onClick, color = 'primary') => (
-			<Button
-				variant={'contained'}
-				color={color}
-				disabled={false}
-				onClick={onClick}
-			>
-				{text}
-			</Button>
-		)
-	let buttonText: string
-	let buttonColor: PropTypes.Color = 'primary'
-	let onClick: () => unknown
-
-	/* Active or not active button */
-	switch (userStatus) {
-		case FriendshipTypeResponse.CancelledByYou:
-		case FriendshipTypeResponse.CancelledByOther:
-		case FriendshipTypeResponse.NotFriends:
-			buttonText = 'Invite'
-			onClick = () => {
-				sendFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.RequestedByYou)
-				})
-			}
-			break
-		case FriendshipTypeResponse.RequestedByOther:
-			buttonText = 'Accept Invite'
-			onClick = () => {
-				acceptFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.AcceptedByYou)
-				})
-			}
-			break
-		case FriendshipTypeResponse.AcceptedByOther:
-		case FriendshipTypeResponse.AcceptedByYou:
-			onClick = () => {
-				unfriend(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.NotFriends)
-				})
-			}
-			buttonText = 'Unfriend'
-			buttonColor = 'secondary'
-			break
-		case FriendshipTypeResponse.RequestedByYou:
-			buttonText = 'Cancel invite'
-			onClick = () => {
-				cancelFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.NotFriends)
-				})
-			}
-			buttonColor = 'secondary'
-			break
-		default: {
-			assertUnreachable(userStatus)
-		}
-
-	}
-	const onClickWithPrimaryAction = async () => {
-		await onClick()
-		onPrimaryActionTaken()
-	}
 	return (
 		<Card className={className}>
 			<CardContent>
@@ -131,12 +68,19 @@ export default function UserSmall(
 			</CardContent>
 			<CardActions>
 
+				<ToggleFriendButton
+					sendFriendRequest={sendFriendRequest}
+					cancelFriendRequest={cancelFriendRequest}
+					acceptFriendRequest={acceptFriendRequest}
+					unfriend={unfriend}
+					userStatus={userStatus}
+					userId={user.id}
+					setUserStatus={setUserStatus}
+					onClick={onPrimaryActionTaken}
+				/>
 				{
-					buttonType(
-						buttonText,
-						onClickWithPrimaryAction,
-						buttonColor
-					)
+					isFriend(user) &&
+						<CreateMeetingButton onClick={onPrimaryActionTaken}/>
 				}
 			</CardActions>
 		</Card>
