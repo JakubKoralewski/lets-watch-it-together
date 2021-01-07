@@ -1,8 +1,8 @@
 {
-  "name": "with-typescript-eslint-jest",
-  "author": "@erikdstock",
+  "name": "lets-watch-it-together",
+  "author": "@JakubKoralewski",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,7 +12,7 @@
     "lint": "eslint . --ext ts --ext tsx --ext js",
     "test": "jest",
     "test-all": "yarn lint && yarn type-check && yarn test",
-    "dev-seed": "ts-node -P ./prisma/seeding/tsconfig.json ./prisma/seeding/initiateDb.ts"
+    "dev-seed": "ts-node -r tsconfig-paths/register -P prisma/seeding/tsconfig.script.json prisma/seeding/initiateDb.ts"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
@@ -45,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
     "babel-jest": "^25.2.3",
+    "cross-env": "^7.0.3",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-react": "^7.19.0",
@@ -54,6 +55,9 @@
     "jest-watch-typeahead": "^0.5.0",
     "lint-staged": "^10.0.10",
     "node-fetch": "^2.6.1",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "promptly": "^3.2.0",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0"
   }
 }
