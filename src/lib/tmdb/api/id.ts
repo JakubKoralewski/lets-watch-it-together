@@ -5,6 +5,7 @@ import { Season } from './objects/season'
 import { Company } from './objects/company'
 import { Collection } from './objects/collection'
 import { TmdbMediaType } from '@prisma/client'
+import { TvShowDetails } from './objects/tv_show_details'
 
 
 export enum TmdbIdType {
@@ -12,13 +13,19 @@ export enum TmdbIdType {
 	Show,
 	Person,
 	Collection,
-	Season
+	Season,
 }
 
 export const privateIdToPrismaIdTypeMap = {
 	[TmdbIdType.Movie]: TmdbMediaType.MOVIE,
 	[TmdbIdType.Show]: TmdbMediaType.SHOW,
-	[TmdbIdType.Season]: TmdbMediaType.SEASON
+	[TmdbIdType.Season]: TmdbMediaType.SEASON,
+} as const
+
+export const prismaTmdbMediaTypeToPrivate = {
+	[TmdbMediaType.MOVIE]: TmdbIdType.Movie,
+	[TmdbMediaType.SHOW]: TmdbIdType.Show,
+	[TmdbMediaType.SEASON]: TmdbIdType.Season
 }
 
 export interface TmdbId {
@@ -35,7 +42,7 @@ const serializePrefixMap = {
 
 export function serializeId(
 	id: TmdbId
-) {
+): string {
 	return `${serializePrefixMap[id.type]}${id.id}`
 }
 
@@ -65,69 +72,13 @@ export type ObjectsWithIds =
 	Movie | TvShow | Person |
 	Season | Collection | Company
 
-export type ObjectsWithTmdbIds = Omit<ObjectsWithIds, 'id'> & { id: TmdbId }
-/*
-export function serializeId(
-	object: Movie
-): Movie & {id: TmdbMovieIdSerialized}
-export function serializeId(
-	object: TvShow
-): TvShow & {id: TmdbShowIdSerialized}
-export function serializeId(
-	object: Person
-): Person & {id: TmdbPersonIdSerialized}
-export function serializeId(
-	object: Season
-): Season & {id: TmdbSeasonIdSerialized}
-export function serializeId(
-	object: Collection
-): Collection & {id: TmdbCollectionIdSerialized}
-export function serializeId(
-	object: Company
-): Company & {id: TmdbCompanyIdSerialized}
-export function serializeId(
-	object: ObjectsWithIds
-) {
-	return {
-		...object,
-		id: ('title' in object) ?
-			`m${object.id}` as TmdbMovieIdSerialized :
-			'original_name' in object ?
-				`t${object.id}` as TmdbShowIdSerialized :
-				'profile_path' in object ?
-					`p${object.id}` as TmdbPersonIdSerialized :
-					'episode_count' in object ?
-						`s${object.id}` as TmdbSeasonIdSerialized :
-						'backdrop_path' in object ?
-							`l${object.id}` as TmdbCollectionIdSerialized :
-							'logo_path' in object ?
-								`c${object.id}` as TmdbCompanyIdSerialized :
-								undefined
-	}
-}
-*/
-/*: T & {
-	id: T extends Movie ?
-		TmdbMovieIdSerialized :
-		T extends TvShow ?
-			TmdbShowIdSerialized :
-			T extends Person ?
-				TmdbPersonIdSerialized :
-				T extends Season ?
-					TmdbSeasonIdSerialized :
-					T extends Collection ?
-						TmdbCollectionIdSerialized
-						: T extends Company ?
-						TmdbCompanyIdSerialized :
-						never
-}*/
-
-/*
-(Movie & {id: TmdbMovieIdSerialized}) |
-	(TvShow & {id: TmdbShowIdSerialized}) |
-	(Person & {id: TmdbPersonIdSerialized}) |
-	(Season & {id: TmdbSeasonIdSerialized}) |
-	(Collection & {id: TmdbCollectionIdSerialized}) |
-	(Company & {id: TmdbCompanyIdSerialized})
- */
+// export type ObjectsWithTmdbIds =
+// 	Exclude<ObjectsWithIds, 'id'> & { id: TmdbId }
+export type ObjectsWithTmdbIds =
+	Omit<Movie, 'id'> & { id: TmdbId & {type: TmdbIdType.Movie} } |
+		Omit<TvShow, 'id'> & {id: TmdbId & {type: TmdbIdType.Show}} |
+		Omit<TvShowDetails, 'id'> & {id: TmdbId & {type: TmdbIdType.Show}} |
+		Omit<Person, 'id'> & {id: TmdbId & {type: TmdbIdType.Person}} |
+		Omit<Season, 'id'> & {id: TmdbId & {type: TmdbIdType.Season}} |
+		Omit<Collection, 'id'> & {id: TmdbId & {type: TmdbIdType.Collection}}
 export type ImdbMediaId = `tt${number}`

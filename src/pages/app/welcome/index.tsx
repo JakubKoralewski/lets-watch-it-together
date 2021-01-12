@@ -1,19 +1,17 @@
-import Protected from '../../components/Protected'
-import { useEffect, useState } from 'react'
+import Protected from '../../../components/Protected'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
-import Layout from '../../components/Layout'
-import { AddFriends } from '../../components/pages/welcome/AddFriends'
-import { AddShows } from '../../components/pages/welcome/AddShows'
-import { AddMeeting } from '../../components/pages/welcome/AddMeeting'
+import Layout from '../../../components/Layout'
+import { AddFriends } from '../../../components/pages/welcome/AddFriends'
+import { AddShows } from '../../../components/pages/welcome/AddShows'
+import { AddMeeting } from '../../../components/pages/welcome/AddMeeting'
 
-enum Stages {
-	AddFriends,
-	AddShows,
-	AddMeeting,
-	Finished,
-}
 
-function Finished() {
+import { stagesToPathsMap } from './[welcome_stage]'
+import { Stages } from './stages'
+
+
+export function Finished() {
 	return <>{'That\'s all! Have fun! You are being redirected.'}</>
 }
 
@@ -21,20 +19,26 @@ function Finished() {
  * Maps from each @see {@link Stages}
  * to a component responsible for that Stage.
  */
-const stagesMap = {
+export const stagesMap = {
 	[Stages.AddFriends]: AddFriends,
 	[Stages.AddShows]: AddShows,
 	[Stages.AddMeeting]: AddMeeting,
 	[Stages.Finished]: Finished
 }
 
+
 /**
  * Right now this is also used by the index page
  * cause we have nothing else to show there anyway,
  * so thats why this is a separate function.
  */
-export function WelcomeInner({onFinish}: {onFinish: () => void}): JSX.Element {
-	const [stage, setStage] = useState<Stages>(0)
+export function WelcomeInner(
+	{
+		onFinish,
+		stage: defaultStage=0
+	}: {onFinish: () => void, stage?: number}
+): JSX.Element {
+	const [stage, setStage] = useState<Stages>(defaultStage)
 
 	const goToNextStage = () =>
 		setStage((x) => Math.min(x + 1, Stages.Finished))
@@ -42,10 +46,21 @@ export function WelcomeInner({onFinish}: {onFinish: () => void}): JSX.Element {
 		setStage((x) => Math.max(x - 1, Stages.AddFriends))
 	const CurrentComponent = stagesMap[stage]
 
+	const isMount = useRef(true)
+
 	useEffect(() => {
 		if (stage === Stages.Finished) {
 			onFinish()
 		}
+		if(isMount.current) {
+			isMount.current = false
+			return
+		}
+		window.history.pushState(
+			undefined,
+			undefined,
+			`/app/welcome/${stagesToPathsMap[stage]}`
+		)
 	}, [stage])
 
 	return (
@@ -62,11 +77,11 @@ export function WelcomeInner({onFinish}: {onFinish: () => void}): JSX.Element {
 	)
 }
 
-export default function Welcome(): JSX.Element {
+export default function Index(): JSX.Element {
 	const router = useRouter()
 	const onFinish = () => {
 		setTimeout(() => {
-			router.push('/app')
+			void router.push('/app')
 		}, 1000)
 	}
 	return (

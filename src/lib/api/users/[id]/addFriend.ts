@@ -1,8 +1,10 @@
-import { FriendshipType, Prisma } from '@prisma/client'
+import { FriendshipType, Prisma, User } from '@prisma/client'
 import prisma from 'lib/prisma/prisma'
-import {User} from '@prisma/client'
 import assertUnreachable from '../../../utils/assertUnreachable'
 import { HTTPMethod } from 'lib/utils/HTTPMethod'
+import { createLogger, LoggerTypes } from '../../../logger'
+import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
+import { Logger } from 'pino'
 
 export enum AddFriendErrorType {
 	BadFriendId,
@@ -21,19 +23,29 @@ export enum AddFriendErrorType {
 	/** Cancel true */
 	CantCancelAFriendRequestThatYouNeverMade,
 
-	DbCorrupt
+	DbCorrupt,
+	CantUnfriendSomeoneWhosNotYourFriend,
 }
 
-export class AddFriendError extends Error {
+export class AddFriendError extends
+	ErrorInLibWithLogging<AddFriendErrorType>
+{
 	constructor(
 		public addFriendErrorType: AddFriendErrorType,
+		public parentLogger: Logger,
 		public mapMessage?: unknown,
 	) {
-		super(JSON.stringify(mapMessage))
+		super(
+			LibErrorType.AddFriend,
+			AddFriendErrorType,
+			addFriendErrorType,
+			JSON.stringify(mapMessage),
+			parentLogger
+		)
 	}
 }
 
-export function isAddFriendError(err: unknown):
+export function isAddFriendError(err: Error):
 	err is AddFriendError
 {
 	return (
@@ -53,28 +65,18 @@ export interface AddFriendOptionalArguments {
  */
 export async function addFriend(
 	yourId: number,
-	potentialFriendId: string | number,
+	friendId: number,
 	{
 		isCancel=false,
 		method=HTTPMethod.POST
 	}: AddFriendOptionalArguments
 ): Promise<User> {
-	let friendId: number
-	if(typeof potentialFriendId === 'string') {
-		try {
-			friendId = parseInt(potentialFriendId)
-		} catch (e) {
-			throw new AddFriendError(
-				AddFriendErrorType.BadFriendId
-			)
-		}
-	} else {
-		friendId = potentialFriendId
-	}
+	const logger = createLogger(LoggerTypes.AddFriend)
 
 	if (friendId === yourId) {
 		throw new AddFriendError(
-			AddFriendErrorType.FriendAndUserAreTheSameId
+			AddFriendErrorType.FriendAndUserAreTheSameId,
+			logger
 		)
 	}
 	const isAccept = Boolean(method === HTTPMethod.PATCH)
@@ -98,7 +100,7 @@ export async function addFriend(
 	} as const
 
 	let potentialFriend:
-		Prisma.UserGetPayload<typeof getPotentialFriendQuery>;
+		Prisma.UserGetPayload<typeof getPotentialFriendQuery> | null;
 
 	switch (method) {
 		case HTTPMethod.PATCH:
@@ -109,27 +111,30 @@ export async function addFriend(
 			)
 			if (!potentialFriend) {
 				throw new AddFriendError(
-					AddFriendErrorType.FriendDoesntExist
+					AddFriendErrorType.FriendDoesntExist,
+					logger
 				)
 			}
 			break
 		default: {
 			throw new AddFriendError(
 				AddFriendErrorType.InvalidMethod,
+				logger,
 				{
 					method
 				}
 			)
 		}
 	}
+	let updatedUser: User
 
 	switch (method) {
 		case HTTPMethod.PATCH:
 		case HTTPMethod.POST: {
 			if (isAccept) {
-				console.log('accepting friend request')
+				logger.debug('accepting friend request')
 			} else {
-				console.log('sending friend request')
+				logger.debug('sending friend request')
 			}
 
 			if (potentialFriend.friendRequestsSent.length === 1) {
@@ -140,11 +145,12 @@ export async function addFriend(
 					// you have a bug in your code and I won't
 					// go any further
 					throw new AddFriendError(
-						AddFriendErrorType.AcceptWasNotProvidedButFriendRequestAlreadyExists
+						AddFriendErrorType.AcceptWasNotProvidedButFriendRequestAlreadyExists,
+						logger
 					)
 				} else {
 					// happy path to accept friend request
-					const updatedUser = await prisma.user.update(
+					updatedUser = await prisma.user.update(
 						{
 							where: { id: friendId },
 							data: {
@@ -166,15 +172,15 @@ export async function addFriend(
 							}
 						}
 					)
-					console.log(
+					logger.log(
 						'success accepting friend request',
 						JSON.stringify({ updatedUser })
 					)
-					return
 				}
 			} else if (potentialFriend.friendRequestsSent.length > 1) {
 				throw new AddFriendError(
-					AddFriendErrorType.DbCorrupt
+					AddFriendErrorType.DbCorrupt,
+					logger
 				)
 			}
 
@@ -184,22 +190,25 @@ export async function addFriend(
 				if (isAccept) {
 					// well that just doesn't make sense
 					throw new AddFriendError(
-						AddFriendErrorType.TriedToAcceptButThereWasNothingToAccept
+						AddFriendErrorType.TriedToAcceptButThereWasNothingToAccept,
+						logger
 					)
 				} else {
 					throw new AddFriendError(
-						AddFriendErrorType.CantAcceptTwice
+						AddFriendErrorType.CantAcceptTwice,
+						logger
 					)
 				}
 			} else if (potentialFriend.friendRequestsReceived.length > 1) {
 				throw new AddFriendError(
-					AddFriendErrorType.DbCorrupt
+					AddFriendErrorType.DbCorrupt,
+					logger
 				)
 			}
 
 			// happy path to send friend request
 
-			const updatedUser = await prisma.user.update(
+			updatedUser = await prisma.user.update(
 				{
 					where: { id: friendId },
 					data: {
@@ -228,23 +237,24 @@ export async function addFriend(
 					}
 				}
 			)
-			console.log(
+			logger.debug(
 				'success sending friend request',
 				JSON.stringify({ updatedUser })
 			)
-			return updatedUser
+			break
 		}
 		case HTTPMethod.DELETE: {
 			if (isCancel) {
-				console.log('cancelling friend request')
+				logger.debug('cancelling friend request')
 				if (potentialFriend.friendRequestsReceived.length === 0) {
 					// only one check because you can only cancel the request
 					// if you made it so no point in checking both relations
 					throw new AddFriendError(
-						AddFriendErrorType.CantCancelAFriendRequestThatYouNeverMade
+						AddFriendErrorType.CantCancelAFriendRequestThatYouNeverMade,
+						logger
 					)
 				}
-				const updatedUser = await prisma.user.update({
+				updatedUser = await prisma.user.update({
 					where: {
 						id: friendId
 					},
@@ -267,14 +277,14 @@ export async function addFriend(
 					}
 				})
 
-				return updatedUser
+				break
 			} else {
-				console.log('unfriending friend')
+				logger.debug('unfriending friend')
 				// here we are unfriending someone and we don't know if
 				// you sent the request or the friend sent it so we need
 				// to check both relations now
 				if (potentialFriend.friendRequestsReceived.length === 1) {
-					const updatedUser = await prisma.user.update({
+					updatedUser = await prisma.user.update({
 						where: {
 							id: friendId
 						},
@@ -297,11 +307,11 @@ export async function addFriend(
 							}
 						}
 					})
-					return updatedUser
+					break
 				} else if (
 					potentialFriend.friendRequestsSent.length === 1
 				) {
-					const updatedUser = await prisma.user.update({
+					updatedUser = await prisma.user.update({
 						where: {
 							id: friendId
 						},
@@ -324,17 +334,19 @@ export async function addFriend(
 							}
 						}
 					})
-					return updatedUser
+					break
+				} else {
+					throw new AddFriendError(
+						AddFriendErrorType.CantUnfriendSomeoneWhosNotYourFriend,
+						logger
+					)
 				}
 			}
-
-			break
 		}
 		default: {
 			assertUnreachable(method)
-			// already checked when getting potential friend
-			// should never happen
-			console.error('fatal 275 !!!!!!!!!!!!!!!!!!!')
+			logger.fatal('should have been unreachable')
 		}
 	}
+	return updatedUser
 }

@@ -1,5 +1,3 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/client'
 import { constants } from 'http2'
 import getShowDetails, {
 	GetShowDetailsErrorType,
@@ -7,33 +5,40 @@ import getShowDetails, {
 } from 'lib/api/shows/getShowDetails'
 import { TmdbIdType } from 'lib/tmdb/api/id'
 import prisma from 'lib/prisma/prisma'
-import {TmdbMediaType} from '@prisma/client'
+import { TmdbMediaType } from '@prisma/client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
+import { NextApiRequest } from 'next'
+import { getIdAsNumber } from '../../../../lib/api/utils/validation'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,
-	HTTP_STATUS_UNAUTHORIZED,
 	HTTP2_METHOD_POST,
 	HTTP2_METHOD_DELETE,
 	HTTP_STATUS_CONFLICT,
 	HTTP_STATUS_METHOD_NOT_ALLOWED
 } = constants
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-	const session = await getSession({ req })
-	console.log(`"/api/shows/${req.query.id}/like" with ${req.method}`)
-	if (session) {
+// export default protectedApiHandler(
+// 	async (req: NextApiRequest & { query: { id: number } }, res, session
+// 	) => {
+// export default protectedApiHandler(
+// 	async (req: NextApiRequest<{id: number}>, res, session
+// 	) => {
+// export default protectedApiHandler(
+// 	{
+// 		id: {
+// 			type: 'number',
+// 			description: 'tmdb id of show'
+// 		}
+// 	},
+export default protectedApiHandler(
+	async (req: NextApiRequest, res, session
+	) => {
 		const shouldDislike = Boolean(req.method === HTTP2_METHOD_DELETE)
-		const userId: number = session.user['id']
+		const userId: number = session.user.id
 		// Signed in
-		let showTmdbId: number
-		try {
-			showTmdbId = parseInt(req.query.id as string)
-		} catch {
-			res.status(HTTP_STATUS_BAD_REQUEST)
-			res.end()
-			return
-		}
+		const showTmdbId: number = getIdAsNumber(req, res)
 
 		switch (req.method) {
 			case HTTP2_METHOD_DELETE:
@@ -52,13 +57,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 					// we catch error to check if the reason of the error is
 					// that the provided id is not a valid show, then we return
 					// a different non-generic error
-					if(
+					if (
 						isGetShowDetailsError(e) &&
 						e.errorType === GetShowDetailsErrorType.NotFound
 					) {
 						// return different error if id doesn't exist
 						res.status(HTTP_STATUS_BAD_REQUEST)
-						res.json(
+						res.jsonWithLog(
 							{
 								message: `show with tmdb id ${showTmdbId} does not exist`
 							}
@@ -69,7 +74,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 						// and a different error if id is wrong for other,
 						// unknown reasons
 						res.status(HTTP_STATUS_BAD_REQUEST)
-						res.json(
+						res.jsonWithLog(
 							{
 								message: `unknown problem with tmdb show id ${showTmdbId}`
 							}
@@ -107,12 +112,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 					// we catch the error because the database may throw an error
 					// that the unique constraint is not satisfied, meaning that
 					// the the show has already been liked
-					if(e instanceof PrismaClientKnownRequestError) {
+					if (e instanceof PrismaClientKnownRequestError) {
 						// https://www.prisma.io/docs/concepts/components/prisma-client/error-reference
-						if(e.code === 'P2002') {
+						if (e.code === 'P2002') {
 							// "Unique constraint failed on the ${constraint}"
 							res.status(HTTP_STATUS_CONFLICT)
-							res.json(
+							res.jsonWithLog(
 								{
 									message: `tmdb show id ${showTmdbId} already liked`
 								}
@@ -130,15 +135,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 				return
 			}
 			default: {
-				console.error('unsupported method', req.method)
 				res.status(HTTP_STATUS_METHOD_NOT_ALLOWED)
 				res.end()
 				return
 			}
 		}
-	} else {
-		// Not Signed in
-		res.status(HTTP_STATUS_UNAUTHORIZED)
-	}
-	res.end()
-}
+		// unreachable ignore
+		res.end()
+	})

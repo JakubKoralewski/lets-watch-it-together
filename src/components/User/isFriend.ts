@@ -1,5 +1,5 @@
-import { UserPublicSearchResult } from '../../lib/UserPublic'
-import { FriendshipTypeResponse } from '../../lib/api/user/[id]/FriendshipType'
+import { UserPublicSearchResult } from '../../lib/api/users/UserPublic'
+import { FriendshipTypeResponse } from '../../lib/api/users/[id]/FriendshipType'
 
 export function isFriend(user: UserPublicSearchResult): boolean{
 	return user.status === FriendshipTypeResponse.AcceptedByYou ||

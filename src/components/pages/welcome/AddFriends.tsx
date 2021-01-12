@@ -1,11 +1,12 @@
 import { Box, InputAdornment, makeStyles, TextField } from '@material-ui/core'
-import { useEffect, useState } from 'react'
-import { UserPublicSearchResult } from '../../../lib/UserPublic'
+import { useEffect, useRef, useState } from 'react'
+import { UserPublicSearchResult } from '../../../lib/api/users/UserPublic'
 import useDebounced from '../../../lib/utils/useDebounced'
 import { AccountCircle, Search } from '@material-ui/icons'
 import { Skeleton } from '@material-ui/lab'
 import UserSmall from '../../User/UserSmall'
 import { GoToNextStageProps, NextOrSkipWrapper } from './NextOrSkipWrapper'
+import { User } from 'next-auth'
 
 
 export const useFriendsStyles = makeStyles((theme) => ({
@@ -33,6 +34,8 @@ export function AddFriends(
 ): JSX.Element {
 	const styles = useFriendsStyles()
 
+	// TODO: maybe get 10 users and show them at beginning?
+	// FIXME: maybe hide, throw away users who dont match anymore?
 	const [foundUsers, setFoundUsers] =
 		useState<Record<string, UserPublicSearchResult>>({})
 
@@ -60,7 +63,7 @@ export function AddFriends(
 
 		// console.log({searchResults})
 		if (searchResults && searchResults.length > 0) {
-			const mappedResults = {}
+			const mappedResults: Record<number, UserPublicSearchResult> = {}
 			searchResults.forEach(usr => {
 				mappedResults[usr.id] = usr
 			})
@@ -70,9 +73,13 @@ export function AddFriends(
 		}
 		setSearching(false)
 	}
+	const loaded = useRef(false)
 
 	useEffect(() => {
-		setSearching(false)
+		if (!loaded.current) {
+			loaded.current = true
+			return
+		}
 		void search(searchString)
 	}, [searchString])
 
@@ -87,6 +94,7 @@ export function AddFriends(
 
 	const [primaryActionTaken, setPrimaryActionTaken] = useState(false)
 	const onPrimaryActionTaken = () => setPrimaryActionTaken(true)
+	const foundUsersValues = Object.values(foundUsers)
 
 
 	return (
@@ -101,7 +109,7 @@ export function AddFriends(
 			<Box>
 				<TextField
 					id="outlined-basic"
-					label={'Search users (type "my")'}
+					label={`Search users${process.env.NODE_ENV === 'development' ? ' (type "my")' : ''}`}
 					variant="outlined"
 					onChange={
 						(e) => debouncedSetInput(e.target.value.trim())
@@ -131,23 +139,22 @@ export function AddFriends(
 				{
 					searching &&
 					[0, 1, 2].map(i =>
-						<Skeleton
+						<UserSmall
 							key={i}
-							variant={'rect'}
-							width={300}
-							height={100}
-							className={styles.userSmall}
+							isLoading={true}
+							user={{} as UserPublicSearchResult}
 						/>
 					)
 				}
 				{
-					Object.values(foundUsers)
-						.map(usr =>
+					foundUsersValues.length === 0 ?
+						<div>No users found 😥</div> :
+						foundUsersValues.map(usr =>
 							<UserSmall
 								key={usr.id}
 								user={usr}
 								className={styles.userSmall}
-								onPrimaryActionTaken={onPrimaryActionTaken}
+								onFriendToggle={onPrimaryActionTaken}
 							/>
 						)
 				}

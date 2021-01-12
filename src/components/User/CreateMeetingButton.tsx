@@ -8,7 +8,9 @@ export default function CreateMeetingButton({
 	onClick
 }: CreateMeetingButtonProps): JSX.Element
 {
-	let innerOnClick: () => unknown
+	const innerOnClick = async () => {
+		console.log("TODO: send request")
+	}
 
 	const newOnClick = async () => {
 		await innerOnClick()

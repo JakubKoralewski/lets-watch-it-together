@@ -1,6 +1,7 @@
 import tmdb, { isTmdbError, TmdbErrorTmdbResponse, TmdbErrorType, TmdbPath, TvGetDetails } from 'lib/tmdb/tmdb'
 import { TMDBTvGetDetailsResponse } from '../../tmdb/api/tv_get_details'
 import { TmdbId, TmdbIdType } from '../../tmdb/api/id'
+import { ErrorInLibWithLogging, LibErrorType } from '../../logger/libLogger'
 
 export enum GetShowDetailsErrorType {
 	Other,
@@ -9,12 +10,19 @@ export enum GetShowDetailsErrorType {
 	NotAShowId
 }
 
-export class GetShowDetailsError extends Error {
+export class GetShowDetailsError
+	extends ErrorInLibWithLogging<GetShowDetailsErrorType>
+{
 	constructor(
 		public errorType: GetShowDetailsErrorType,
 		public mapMessage?: string,
 	) {
-		super(mapMessage)
+		super(
+			LibErrorType.GetShowDetails,
+			GetShowDetailsErrorType,
+			errorType,
+			mapMessage
+		)
 	}
 }
 

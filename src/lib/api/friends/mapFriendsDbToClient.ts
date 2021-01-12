@@ -1,8 +1,8 @@
 import { FriendRequests, User } from '@prisma/client'
-import { UserPublicSearchResult } from '../../UserPublic'
-import { FriendshipTypeResponse } from '../user/[id]/FriendshipType'
+import { UserPublicSearchResult } from '../users/UserPublic'
+import { FriendshipTypeResponse } from '../users/[id]/FriendshipType'
 
-export type Friend =
+export type YourFriend =
 	Omit<UserPublicSearchResult, 'status'> & {
 	status:
 		FriendshipTypeResponse.AcceptedByYou |
@@ -10,23 +10,25 @@ export type Friend =
 }
 
 export function toFriendRequestReceived(
-	acceptedRequestReceived: FriendRequests & {requester: User}
-): Friend {
+	acceptedRequestReceived: FriendRequests,
+	requester: User
+): YourFriend {
 	return {
-		image: acceptedRequestReceived.requester.image,
-		id: acceptedRequestReceived.requester.id,
-		name: acceptedRequestReceived.requester.name,
+		image: requester.image,
+		id: requester.id,
+		name: requester.name,
 		status: FriendshipTypeResponse.AcceptedByYou
 	}
 }
 
 export function toFriendRequestSent(
-	acceptedRequestSent: FriendRequests & {requestee: User}
-): Friend {
+	acceptedRequestSent: FriendRequests,
+	requestee: User
+): YourFriend {
 	return {
-		image: acceptedRequestSent.requestee.image,
-		id: acceptedRequestSent.requestee.id,
-		name: acceptedRequestSent.requestee.name,
+		image: requestee.image,
+		id: requestee.id,
+		name: requestee.name,
 		status: FriendshipTypeResponse.AcceptedByOther
 	}
 }

@@ -1,9 +1,11 @@
 import redis, { RedisWrapperClass } from '../redis/redis-wrapper'
-import got, { Response as GOTResponse, Method as GOTMethod } from 'got'
+import got, { Method as GOTMethod, Response as GOTResponse } from 'got'
 import { TMDBFindResponse } from './api/find'
 import { TvShowDetails } from './api/objects/tv_show_details'
-import { IncomingHttpHeaders } from 'http2'
+import { IncomingHttpHeaders } from 'http'
 import HTTPMethod from '../utils/HTTPMethod'
+import { ErrorInLibWithLogging, LibErrorType } from '../logger/libLogger'
+import { createLogger, LoggerTypes } from '../logger'
 
 export type Find = `find/${string}`
 export type FindOptions = { external_source: 'imdb_id' | string }
@@ -37,29 +39,36 @@ export enum TmdbErrorType {
 	Redis,
 	Tmdb,
 	Http,
+	NoApiKey
 }
+
+const traceLogger = createLogger(LoggerTypes.Tmdb, false)
 
 export type TmdbErrorTmdbResponse = {
 	body: string,
 	statusCode: number,
 	headers: IncomingHttpHeaders
 	// headers: response.rawHeaders
-}
+} & Record<string, unknown>
 
-
-export class TmdbError<T extends TmdbErrorType> extends Error {
+export class TmdbError<T extends TmdbErrorType>
+	extends ErrorInLibWithLogging<TmdbErrorType> {
 	constructor(
 		public tmdbErrorType: T,
 		public tmdbMessage: T extends TmdbErrorType.Tmdb ?
 			TmdbErrorTmdbResponse : string
 	) {
-		super(`TmdbError: [${tmdbErrorType}]: ${tmdbMessage}`)
+		super(
+			LibErrorType.Tmdb,
+			TmdbErrorType,
+			tmdbErrorType,
+			JSON.stringify(tmdbMessage)
+		)
 	}
 }
 
-export function isTmdbError<T extends TmdbErrorType>(err: unknown):
-	err is TmdbError<T>
-{
+export function isTmdbError<T extends TmdbErrorType>(err: Error):
+	err is TmdbError<T> {
 	return err && typeof err === 'object' && 'tmdbMessage' in err
 }
 
@@ -74,6 +83,9 @@ class TmdbClient {
 		this.apiString = 'https://api.themoviedb.org/3'
 	}
 
+	/** Convert the given options query parameters to set in the
+	 *  URL.
+	 */
 	private optionsToQueryString<T extends SupportedTmdbPaths>(
 		options: TmdbPathOptions<T>['o']
 	) {
@@ -83,9 +95,9 @@ class TmdbClient {
 		}
 		const createPair = (key: string, value: string) =>
 			`${encodeURIComponent(key)}=${encodeURIComponent(value)}`
-		let queryString = `?${createPair(keys[0], options[keys[0]])}`
+		let queryString = `?${createPair(keys[0], (options as Record<string, string>)[keys[0]])}`
 		keys.slice(1).forEach((key) => {
-			queryString += `&${createPair(key, options[key])}`
+			queryString += `&${createPair(key, (options as Record<string, string>)[key])}`
 		})
 		return queryString
 	}
@@ -131,9 +143,15 @@ class TmdbClient {
 		}
 
 		if (cache) {
+			traceLogger.debug({
+				c: 'hit'
+			})
 			/* Cache hit */
 			return JSON.parse(cache)
 		}
+		traceLogger.debug({
+			c: 'miss'
+		})
 		/* Cache miss */
 
 		/* Make request to TMDb*/
@@ -154,11 +172,9 @@ class TmdbClient {
 
 			/** No need to really await */
 			void this.redis.set(redisKey, response.body).catch((reason) => {
-				console.error(
-					new TmdbError(
-						TmdbErrorType.Redis,
-						`set ${redisKey}, reason: ${reason}`
-					)
+				throw new TmdbError(
+					TmdbErrorType.Redis,
+					`set ${redisKey}, reason: ${reason}`
 				)
 			})
 		} else {
@@ -167,6 +183,7 @@ class TmdbClient {
 			throw new TmdbError(
 				TmdbErrorType.Tmdb,
 				{
+					message: 'invalid response from tmdb',
 					body: response.body,
 					statusCode: response.statusCode,
 					headers: response.headers
@@ -180,4 +197,12 @@ class TmdbClient {
 	}
 }
 
-export default new TmdbClient(process.env.TMDB_API_KEY, redis, 3)
+if (!process.env.TMDB_API_KEY) {
+	throw new TmdbError(
+		TmdbErrorType.NoApiKey,
+		'TMDB_API_KEY environment variable not set!'
+	)
+}
+const client = new TmdbClient(process.env.TMDB_API_KEY, redis, 3)
+
+export default client

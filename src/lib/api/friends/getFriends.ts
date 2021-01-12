@@ -1,11 +1,63 @@
 import prisma from 'lib/prisma/prisma'
-import {FriendshipType} from '@prisma/client'
+import { FriendRequests, FriendshipType, User } from '@prisma/client'
 import {
-	Friend, toFriendRequestReceived, toFriendRequestSent
+	toFriendRequestReceived as toFriendRequestReceivedInner,
+	toFriendRequestSent as toFriendRequestSentInner,
+	YourFriend
 } from './mapFriendsDbToClient'
+import { ErrorInLibWithLogging, LibErrorType } from '../../logger/libLogger'
+
+export enum GetFriendsErrorType {
+	UserIdDoesntExist
+}
+
+export class GetFriendsError extends
+	ErrorInLibWithLogging<GetFriendsErrorType>
+{
+	constructor(
+		public getFriendsErrorType: GetFriendsErrorType,
+		public mapMessage?: unknown,
+	) {
+		super(
+			LibErrorType.GetFriends,
+			GetFriendsErrorType,
+			getFriendsErrorType,
+			JSON.stringify(mapMessage)
+		)
+	}
+}
+
+export function isGetFriendsError(err: Error):
+	err is GetFriendsError
+{
+	return (
+		err instanceof GetFriendsError ||
+		(
+			typeof err === 'object' && ('getFriendsErrorType' in err)
+		)
+	)
+}
+
+function toFriendRequestReceived(
+	acceptedRequestReceived: FriendRequests & {requester: User}
+): YourFriend {
+	return toFriendRequestReceivedInner(
+		acceptedRequestReceived,
+		acceptedRequestReceived.requester
+	)
+}
+
+function toFriendRequestSent(
+	acceptedRequestSent: FriendRequests & {requestee: User}
+): YourFriend {
+	return toFriendRequestSentInner(
+		acceptedRequestSent,
+		acceptedRequestSent.requestee
+	)
+}
 
 export async function getFriends(ofUserWithId: number):
-	Promise<Friend[]>
+	Promise<YourFriend[]>
 {
 	const user = await prisma.user.findUnique({
 		where: {
@@ -17,6 +69,7 @@ export async function getFriends(ofUserWithId: number):
 					friendshipType: FriendshipType.ACCEPTED
 				},
 				include: {
+					// We need to get whomever you sent the request to
 					requestee: true
 				}
 			},
@@ -25,11 +78,18 @@ export async function getFriends(ofUserWithId: number):
 					friendshipType: FriendshipType.ACCEPTED,
 				},
 				include: {
+					// We need to get whomever sent the request to you
 					requester: true
 				}
 			}
 		}
 	})
+	if(!user) {
+		throw new GetFriendsError(
+			GetFriendsErrorType.UserIdDoesntExist
+		)
+	}
+
 
 	if(
 		user.friendRequestsReceived.length === 0 &&

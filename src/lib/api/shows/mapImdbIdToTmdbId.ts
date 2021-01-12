@@ -1,6 +1,7 @@
 import tmdb, { Find, TmdbPath } from 'lib/tmdb/tmdb'
 import { TMDBFindResponse } from '../../tmdb/api/find'
-import { ImdbMediaId, TmdbId, TmdbIdType, TmdbMovieId, TmdbShowId } from '../../tmdb/api/id'
+import { ImdbMediaId, TmdbId, TmdbIdType } from '../../tmdb/api/id'
+import { ErrorInLibWithLogging, LibErrorType } from '../../logger/libLogger'
 
 enum MapImdbIdToTmdbIdErrorType {
 	NoTTAtBeginning,
@@ -8,12 +9,19 @@ enum MapImdbIdToTmdbIdErrorType {
 	NotFound
 }
 
-class MapImdbIdToTmdbIdError extends Error {
+class MapImdbIdToTmdbIdError extends
+	ErrorInLibWithLogging<MapImdbIdToTmdbIdErrorType>
+{
 	constructor(
 		public errorType: MapImdbIdToTmdbIdErrorType,
 		public mapMessage?: string
 	) {
-		super(mapMessage)
+		super(
+			LibErrorType.MapImdbToTmdbId,
+			LibErrorType,
+			errorType,
+			mapMessage
+		)
 	}
 }
 

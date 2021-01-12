@@ -1,13 +1,11 @@
-import { Box, InputAdornment, makeStyles, TextField } from '@material-ui/core'
+import { Box, Typography } from '@material-ui/core'
 import { useEffect, useState } from 'react'
-import { UserPublicSearchResult } from '../../../lib/UserPublic'
-import useDebounced from '../../../lib/utils/useDebounced'
-import { AccountCircle, Search } from '@material-ui/icons'
+import { UserPublicSearchResult } from 'lib/api/users/UserPublic'
 import { Skeleton } from '@material-ui/lab'
 import UserSmall from '../../User/UserSmall'
 import { GoToNextStageProps, NextOrSkipWrapper } from './NextOrSkipWrapper'
 import { useFriendsStyles } from './AddFriends'
-
+import { AnimatePresence, motion } from 'framer-motion'
 
 export function AddMeeting(
 	{
@@ -23,17 +21,21 @@ export function AddMeeting(
 		useState<Record<string, UserPublicSearchResult>>({})
 
 	const [loading, setLoading] =
-		useState(false)
+		useState(Object.keys(friends).length > 0)
 
 	const fetchUsers = async (): Promise<UserPublicSearchResult[]> => {
 		const response = await fetch(
-			`/api/friends`, {method: 'GET'}
+			`/api/friends`, { method: 'GET' }
 		)
 		return response.json().catch((reason) => {
 			console.error('response error', reason)
 		})
 	}
-	// const handler = useDebounced(search)
+
+	/**
+	 *  Maybe put this in getServerSideProps
+	 *  but I don't know how to exactly make this happen.
+	 */
 	const getFriends = async () => {
 		setLoading(true)
 		const friendsResults: UserPublicSearchResult[] =
@@ -41,7 +43,7 @@ export function AddMeeting(
 
 		// console.log({searchResults})
 		if (friendsResults && friendsResults.length > 0) {
-			const mappedResults = {}
+			const mappedResults: Record<number, UserPublicSearchResult> = {}
 			friendsResults.forEach(usr => {
 				mappedResults[usr.id] = usr
 			})
@@ -62,21 +64,46 @@ export function AddMeeting(
 	const [primaryActionTaken, setPrimaryActionTaken] = useState(false)
 	const onPrimaryActionTaken = () => setPrimaryActionTaken(true)
 
+	const friendsValues = Object.values(friends)
+	let friendsElement: JSX.Element
 
-	return (
-		<NextOrSkipWrapper
-			nextStage={nextStage}
-			canGoForward={primaryActionTaken}
-			currentStage={currentStage}
-			maxStage={maxStage}
-			prevStage={prevStage}
-		>
-			<Box>Select friend to add meeting with</Box>
-			<Box
-				className={friendsStyles.usersContainer}
+	if (friendsValues.length > 0) {
+		friendsElement = (
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
 			>
 				{
-					loading &&
+					friendsValues.map(usr =>
+						<UserSmall
+							key={usr.id}
+							user={usr}
+							className={friendsStyles.userSmall}
+							onNewMeetingPress={onPrimaryActionTaken}
+						/>
+					)
+				}
+			</motion.div>
+		)
+	} else {
+		friendsElement = (
+			<motion.div
+				initial={{ opacity: 0, height: '100%' }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0, height: 0 }}
+			>
+				{`Get some friends first 😥`}
+			</motion.div>
+		)
+	}
+	if (loading) {
+		friendsElement = (
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0, height: 0 }}
+			>
+				{
 					[0, 1, 2].map(i =>
 						<Skeleton
 							key={i}
@@ -87,17 +114,34 @@ export function AddMeeting(
 						/>
 					)
 				}
-				{
-					Object.values(friends)
-						.map(usr =>
-							<UserSmall
-								key={usr.id}
-								user={usr}
-								className={friendsStyles.userSmall}
-								onPrimaryActionTaken={onPrimaryActionTaken}
-							/>
-						)
-				}
+			</motion.div>
+		)
+	}
+
+	return (
+		<NextOrSkipWrapper
+			nextStage={nextStage}
+			canGoForward={primaryActionTaken}
+			currentStage={currentStage}
+			maxStage={maxStage}
+			prevStage={prevStage}
+		>
+			<Box>
+				<Typography>
+					Select friend to add meeting with
+				</Typography>
+			</Box>
+			<Box
+				className={friendsStyles.usersContainer}
+			>
+				<AnimatePresence
+					initial={false}
+					exitBeforeEnter={true}
+				>
+					{
+						friendsElement
+					}
+				</AnimatePresence>
 			</Box>
 		</NextOrSkipWrapper>
 	)

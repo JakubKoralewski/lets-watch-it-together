@@ -1,5 +1,8 @@
+/* eslint-disable no-console */
 import { PrismaClient, User } from '@prisma/client'
-import { addFriend, AddFriendErrorType, isAddFriendError } from '../../src/lib/api/user/[id]/addFriend'
+import {
+	addFriend, AddFriendErrorType, isAddFriendError
+} from '../../src/lib/api/users/[id]/addFriend'
 import HTTPMethod from '../../src/lib/utils/HTTPMethod'
 
 const promptly = require('promptly')
