@@ -1,10 +1,9 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { constants } from 'http2'
 import getShowDetails from 'lib/api/shows/getShowDetails'
 import { stripDetails, StrippedShowDetails } from 'lib/api/shows/[id]/StrippedShowDetails'
 import { TmdbIdType } from 'lib/tmdb/api/id'
-import { mapShowLiked } from '../../../../lib/api/shows/[id]/isShowLiked'
-import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
+import { mapShowLiked } from 'lib/api/shows/[id]/isShowLiked'
+import { protectedApiHandler } from 'lib/api/utils/protectedApiHandler'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,
@@ -48,5 +47,6 @@ export default protectedApiHandler(async (req, res,  session) => {
 			return
 		}
 	}
+	// unneccessary
 	res.end()
 })

@@ -1,5 +1,8 @@
 import pino from 'pino'
-const pinoCaller = require('pino-caller')
+let pinoCaller = (x: any) => x
+if(typeof window === "undefined") {
+	pinoCaller = require('pino-caller')
+}
 
 export enum LoggerTypes {
 	Root='r',
@@ -11,7 +14,12 @@ export enum LoggerTypes {
 	Redis='r',
 	Prisma='p',
 	Tmdb='t',
-	NextAuth='na'
+	NextAuth='na',
+	TmdbId='t_id',
+	GetUserDetails='gud',
+	ProtectedApiHandler='pah',
+	IsShowLiked='isl',
+	NewMeetingGetServerSideProps='nmgssp',
 }
 
 export function createLogger(

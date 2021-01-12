@@ -4,6 +4,6 @@
 //	"baseUrl": "",
 	"module": "commonjs",
 	"moduleResolution": "Node"
-  },
-  "include": ["./src/**/*.ts"]
+  }//,
+//  "include": ["../../src/**/*.ts", "../../next-env.d.ts"]
 }

@@ -1,15 +1,24 @@
-import { Avatar, Box, Button, makeStyles, PropTypes } from '@material-ui/core'
+import {
+	Button,
+	makeStyles,
+} from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
-import { useEffect, useRef, useState } from 'react'
-import { StrippedShowDetails } from '../../lib/api/shows/[id]/StrippedShowDetails'
+import {
+	useEffect,
+	useRef,
+	useState
+} from 'react'
+import {
+	StrippedShowDetails
+} from '../../lib/api/shows/[id]/StrippedShowDetails'
 
 export interface ShowSmallProps {
 	show: StrippedShowDetails,
 	className?: string,
-	onPrimaryActionTaken: () => void
+	onPrimaryActionTaken?: () => void
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -40,7 +49,7 @@ export default function ShowSmall(
 		className,
 		onPrimaryActionTaken
 	}: ShowSmallProps
-) {
+): JSX.Element {
 	const classes = useStyles()
 	console.log({ userSmall: { show } })
 	const [liked, setLiked] = useState(show.liked)
@@ -60,12 +69,15 @@ export default function ShowSmall(
 				id: show.id.id
 			})
 		})
-		onPrimaryActionTaken()
+		onPrimaryActionTaken && onPrimaryActionTaken()
 	}, [liked])
 	return (
 		<Card className={className}>
 			<CardContent>
-				<img src={`https://image.tmdb.org/t/p/w200${show.poster_path}`} />
+				<img
+					alt={`${show.name}'s poster`}
+					src={`https://image.tmdb.org/t/p/w200${show.poster_path}`}
+				/>
 				<Typography className={classes.bold}>
 					{show.name}
 				</Typography>

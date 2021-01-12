@@ -1,12 +1,27 @@
 import { useState } from 'react'
-import { ImdbMediaId, serializeId, TmdbIdSerialized } from '../../../lib/tmdb/api/id'
-import { StrippedShowDetails } from '../../../lib/api/shows/[id]/StrippedShowDetails'
-import { Box, Container, InputAdornment, TextField } from '@material-ui/core'
-import { InsertDriveFile, MoreVert, Movie, Search } from '@material-ui/icons'
-import { DropzoneArea } from 'material-ui-dropzone'
+import {
+	ImdbMediaId,
+	serializeId,
+} from '../../../lib/tmdb/api/id'
+import {
+	StrippedShowDetails
+} from '../../../lib/api/shows/[id]/StrippedShowDetails'
+import {
+	Box, Container, InputAdornment, TextField
+} from '@material-ui/core'
+import {
+	InsertDriveFile, MoreVert, Movie, Search
+} from '@material-ui/icons'
+import {
+	DropzoneArea
+} from 'material-ui-dropzone'
 import ShowSmall from '../../Show/ShowSmall'
-import { GoToNextStageProps, NextOrSkipWrapper } from './NextOrSkipWrapper'
-import { useFriendsStyles } from './AddFriends'
+import {
+	GoToNextStageProps, NextOrSkipWrapper
+} from './NextOrSkipWrapper'
+import {
+	useFriendsStyles
+} from './AddFriends'
 
 export function AddShows(
 	{
@@ -18,7 +33,7 @@ export function AddShows(
 ): JSX.Element {
 	const styles = useFriendsStyles()
 
-	const [shows, setShows] = useState<Record<TmdbIdSerialized,
+	const [shows, setShows] = useState<Record<string,
 		StrippedShowDetails>>({})
 
 	const onChangeDropzone = async (files: File[]) => {
@@ -68,7 +83,7 @@ export function AddShows(
 				})
 			})
 			const json: StrippedShowDetails[] = await response.json()
-			const showMap: Record<TmdbIdSerialized, StrippedShowDetails> = {}
+			const showMap: Record<string, StrippedShowDetails> = {}
 			json.forEach(show => {
 				const serialized = serializeId(show.id)
 				showMap[serialized] = show
@@ -97,13 +112,26 @@ export function AddShows(
 						<ol>
 							<li>Sign up on IMDb</li>
 							<li>Click on your profile</li>
-							<li>Click "Your lists"</li>
-							<li>Click "CREATE A NEW LIST"</li>
-							<li>Give it a name and description</li>
-							<li>Click "CREATE"</li>
 							<li>
-								Find and add shows with "Add a movie or TV show to
-								this list:"
+								{
+									`Click "Your lists"`
+								}
+							</li>
+							<li>{
+								`Click "CREATE A NEW LIST"`
+							}
+							</li>
+							<li>Give it a name and description</li>
+							<li>
+								{
+									`Click "CREATE"`
+								}
+							</li>
+							<li>
+								{
+									`Find and add shows with "Add a movie or TV show to
+									this list:"`
+								}
 							</li>
 							<li>
 								Once you have a list such as{' '}
@@ -116,7 +144,11 @@ export function AddShows(
 								</a>{' '}
 								click the <MoreVert /> icon
 							</li>
-							<li>Click "Export"</li>
+							<li>
+								{
+									`Click "Export"`
+								}
+							</li>
 							<li>Upload the CSV with your liked shows below</li>
 						</ol>
 						<DropzoneArea

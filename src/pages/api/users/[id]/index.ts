@@ -7,6 +7,9 @@ import {
 import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
 import { getIdAsNumber, setMessageAsErrorTypeGenerator } from '../../../../lib/api/utils/validation'
 import { UserDetails } from '../../../../lib/api/users/UserDetails'
+import { createLogger, LoggerTypes } from '../../../../lib/logger'
+
+const logger = createLogger(LoggerTypes.ProtectedApiHandler, true)
 
 export default protectedApiHandler(async (
 	req,
@@ -48,6 +51,12 @@ export default protectedApiHandler(async (
 			}
 		} else {
 			// unknown error
+			logger.error(
+				{
+					msg: `unknown error while getting user details`,
+					err: e
+				}
+			)
 			throw e
 		}
 	}

@@ -4,8 +4,11 @@ import { Person } from './objects/person'
 import { Season } from './objects/season'
 import { Company } from './objects/company'
 import { Collection } from './objects/collection'
-import { TmdbMediaType } from '@prisma/client'
+import { MediaLike, TmdbMediaType } from '@prisma/client'
 import { TvShowDetails } from './objects/tv_show_details'
+import { createLogger, LoggerTypes } from '../../logger'
+import {invert} from 'lodash'
+import { Dictionary } from '@reduxjs/toolkit'
 
 
 export enum TmdbIdType {
@@ -40,10 +43,69 @@ const serializePrefixMap = {
 	[TmdbIdType.Season]: 's'
 } as const
 
+/** https://stackoverflow.com/a/37697429/10854888 */
+const deserializePrefixMap =
+	invert(serializePrefixMap) as unknown as Record<'m' | 't' | 'l' | 'p' | 's', TmdbIdType>
+
+/** Server code*/
 export function serializeId(
 	id: TmdbId
-): string {
-	return `${serializePrefixMap[id.type]}${id.id}`
+): TmdbIdSerialized {
+	return `${serializePrefixMap[id.type]}${id.id}` as TmdbIdSerialized
+}
+
+/** Client code */
+export function deserializeId(
+	serializedId: TmdbIdSerialized
+): TmdbId {
+	if(!serializedId || !(typeof serializedId === 'string') || serializedId.length <= 2) {
+		throw Error(`serializedId.A "${serializedId}"`)
+	}
+	const type = serializedId[0]
+	if(!(type in deserializePrefixMap)) {
+		throw Error(`serializedId.C "${serializedId}" ${JSON.stringify(deserializePrefixMap)}`)
+	}
+	const actualType = deserializePrefixMap[
+		type as keyof typeof deserializePrefixMap
+	]
+	const id = serializedId.slice(1)
+	let numberId: number
+	try {
+		numberId = parseInt(id)
+	} catch(e) {
+		throw Error(`serializedId.B "${serializedId}"`)
+	}
+	return {
+		type: actualType,
+		id: numberId
+	}
+}
+
+const logger = createLogger(LoggerTypes.TmdbId, false)
+
+/** Server code */
+export const mediaLikeToId = (
+	mediaLike: MediaLike
+): TmdbId => {
+	if(!(mediaLike.type in prismaTmdbMediaTypeToPrivate)) {
+		const msg = `mediaLike.type unknown while converting to tmdbId`
+		const err = new Error(msg)
+		logger.error({
+			msg,
+			err,
+			mediaLike,
+			prismaTmdbMediaTypeToPrivate
+		})
+		throw err
+	} else {
+		return {
+			type:
+				prismaTmdbMediaTypeToPrivate[
+					mediaLike.type as keyof typeof prismaTmdbMediaTypeToPrivate
+				],
+			id: mediaLike.tmdbId
+		}
+	}
 }
 
 export type TmdbMovieId = number

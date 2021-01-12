@@ -1,7 +1,6 @@
 import { FriendshipType, Prisma, User } from '@prisma/client'
 import prisma from 'lib/prisma/prisma'
 import assertUnreachable from '../../../utils/assertUnreachable'
-import { HTTPMethod } from 'lib/utils/HTTPMethod'
 import { createLogger, LoggerTypes } from '../../../logger'
 import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
 import { Logger } from 'pino'
@@ -27,27 +26,28 @@ export enum AddFriendErrorType {
 	CantUnfriendSomeoneWhosNotYourFriend,
 }
 
-export class AddFriendError extends
-	ErrorInLibWithLogging<AddFriendErrorType>
-{
+export class AddFriendError extends ErrorInLibWithLogging<AddFriendErrorType> {
 	constructor(
 		public addFriendErrorType: AddFriendErrorType,
 		public parentLogger: Logger,
 		public mapMessage?: unknown,
+		public parentError?: Error
 	) {
 		super(
-			LibErrorType.AddFriend,
-			AddFriendErrorType,
-			addFriendErrorType,
-			JSON.stringify(mapMessage),
-			parentLogger
+			{
+				libErrorType: LibErrorType.AddFriend,
+				innerEnum: AddFriendErrorType,
+				innerErrorEnumValue: addFriendErrorType,
+				libErrorMessage: JSON.stringify(mapMessage),
+				parentLogger: parentLogger,
+				parentError
+			}
 		)
 	}
 }
 
 export function isAddFriendError(err: Error):
-	err is AddFriendError
-{
+	err is AddFriendError {
 	return (
 		err instanceof AddFriendError ||
 		(
@@ -56,19 +56,27 @@ export function isAddFriendError(err: Error):
 	)
 }
 
-export interface AddFriendOptionalArguments {
-	isCancel?: boolean,
-	method: HTTPMethod
+export enum AddFriendActionType {
+	SendFriendRequest,
+	AcceptFriendRequest,
+	CancelFriendRequest,
+	Unfriend
 }
+
+export interface AddFriendOptionalArguments {
+	action: AddFriendActionType
+	// isCancel?: boolean,
+	// method: HTTPMethod
+}
+
 /**
  * Assumes session validation, authentication were already done!
  */
-export async function addFriend(
+export async function friendRequest(
 	yourId: number,
 	friendId: number,
 	{
-		isCancel=false,
-		method=HTTPMethod.POST
+		action
 	}: AddFriendOptionalArguments
 ): Promise<User> {
 	const logger = createLogger(LoggerTypes.AddFriend)
@@ -79,7 +87,6 @@ export async function addFriend(
 			logger
 		)
 	}
-	const isAccept = Boolean(method === HTTPMethod.PATCH)
 
 	const getPotentialFriendQuery = {
 		where: {
@@ -100,12 +107,13 @@ export async function addFriend(
 	} as const
 
 	let potentialFriend:
-		Prisma.UserGetPayload<typeof getPotentialFriendQuery> | null;
+		Prisma.UserGetPayload<typeof getPotentialFriendQuery> | null
 
-	switch (method) {
-		case HTTPMethod.PATCH:
-		case HTTPMethod.POST:
-		case HTTPMethod.DELETE:
+	switch (action) {
+		case AddFriendActionType.SendFriendRequest:
+		case AddFriendActionType.AcceptFriendRequest:
+		case AddFriendActionType.CancelFriendRequest:
+		case AddFriendActionType.Unfriend:
 			potentialFriend = await prisma.user.findUnique(
 				getPotentialFriendQuery
 			)
@@ -117,20 +125,15 @@ export async function addFriend(
 			}
 			break
 		default: {
-			throw new AddFriendError(
-				AddFriendErrorType.InvalidMethod,
-				logger,
-				{
-					method
-				}
-			)
+			assertUnreachable(action)
 		}
 	}
 	let updatedUser: User
 
-	switch (method) {
-		case HTTPMethod.PATCH:
-		case HTTPMethod.POST: {
+	switch (action) {
+		case AddFriendActionType.SendFriendRequest:
+		case AddFriendActionType.AcceptFriendRequest: {
+			const isAccept = action === AddFriendActionType.AcceptFriendRequest
 			if (isAccept) {
 				logger.debug('accepting friend request')
 			} else {
@@ -172,7 +175,7 @@ export async function addFriend(
 							}
 						}
 					)
-					logger.log(
+					logger.debug(
 						'success accepting friend request',
 						JSON.stringify({ updatedUser })
 					)
@@ -243,7 +246,9 @@ export async function addFriend(
 			)
 			break
 		}
-		case HTTPMethod.DELETE: {
+		case AddFriendActionType.CancelFriendRequest:
+		case AddFriendActionType.Unfriend: {
+			const isCancel = action === AddFriendActionType.CancelFriendRequest
 			if (isCancel) {
 				logger.debug('cancelling friend request')
 				if (potentialFriend.friendRequestsReceived.length === 0) {
@@ -299,8 +304,7 @@ export async function addFriend(
 									},
 									data: {
 										friendshipType:
-										FriendshipType.
-											UNFRIENDED_BY_REQUESTER,
+										FriendshipType.UNFRIENDED_BY_REQUESTER,
 										cancelledAt: new Date()
 									}
 								}
@@ -326,8 +330,7 @@ export async function addFriend(
 									},
 									data: {
 										friendshipType:
-										FriendshipType.
-											UNFRIENDED_BY_REQUESTEE,
+										FriendshipType.UNFRIENDED_BY_REQUESTEE,
 										unfriendedAt: new Date()
 									}
 								}
@@ -344,8 +347,7 @@ export async function addFriend(
 			}
 		}
 		default: {
-			assertUnreachable(method)
-			logger.fatal('should have been unreachable')
+			assertUnreachable(action)
 		}
 	}
 	return updatedUser

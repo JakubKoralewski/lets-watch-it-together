@@ -12,32 +12,46 @@ export enum LibErrorType {
 	AddFriend,
 	GetUserDetails,
 	Tmdb,
-	NextAuth
+	NextAuth,
+	LikeShow,
 }
 
-export class ErrorInLibWithLogging<InnerEnumType=undefined> extends Error {
+export interface ErrorInLibWithLoggingParams<InnerEnumType> {
+	libErrorType: LibErrorType,
+	innerEnum: unknown,
+	innerErrorEnumValue: InnerEnumType,
+	libErrorMessage?: string,
+	parentLogger?: Logger,
+	parentError?: Error | unknown
+}
+
+export class ErrorInLibWithLogging<InnerEnumType = undefined> extends Error {
 	constructor(
-		public libErrorType: LibErrorType,
-		public innerEnum: unknown,
-		public innerErrorEnumValue: InnerEnumType,
-		public libErrorMessage?: string,
-		public parentLogger?: Logger
+		{
+			libErrorType,
+			innerEnum,
+			innerErrorEnumValue,
+			libErrorMessage,
+			parentLogger,
+			parentError
+		}: ErrorInLibWithLoggingParams<InnerEnumType>
 	) {
 		super(libErrorMessage)
 		let logger = libLogger
-		if(parentLogger) {
+		if (parentLogger) {
 			logger = parentLogger
 		}
 		logger.error({
 			inLibErrorType: {
-				string: LibErrorType[this.libErrorType],
-				enumValue: this.libErrorType,
+				string: LibErrorType[libErrorType],
+				enumValue: libErrorType
 			},
-			message: libErrorMessage,
+			msg: libErrorMessage,
 			innerEnumValue: {
-				string: innerEnum && innerEnum[this.innerErrorEnumValue],
-				enumValue: this.innerErrorEnumValue
+				string: innerEnum && innerEnum[innerErrorEnumValue],
+				enumValue: innerErrorEnumValue
 			},
+			err: parentError,
 
 			// If using parentLogger the below wouldn't be here so I
 			// add it for consistency

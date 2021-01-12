@@ -91,16 +91,17 @@ export default protectedApiHandler(async (req, res, session) => {
 					} else if (req.query['all']) {
 						res.jsonWithLog(details)
 					} else {
-						res.log.error('invalid')
+						res.log.error({msg: 'invalid params', query: req.query})
 					}
 				} else {
-					res.log.debug('tmdbIds', tmdbIds)
+					res.log.debug({tmdbIds})
 					res.jsonWithLog(tmdbIds)
 				}
 				res.end()
 				return
 			} else if ('imdbId' in json) {
 				/*todo: single imdbid*/
+				res.log.error({msg: 'inimplemented'})
 				res.jsonWithLog('TODO: unimplemented imdbId')
 				/*
 				if(json.imdbId.length === 0) {
@@ -114,6 +115,7 @@ export default protectedApiHandler(async (req, res, session) => {
 					res.end()
 					return
 				}
+				res.log.error({msg: 'unimplemented'})
 				res.jsonWithLog('TODO: unimplemented tmdbIds')
 				const tmdbIds = json.tmdbIds
 			} else {

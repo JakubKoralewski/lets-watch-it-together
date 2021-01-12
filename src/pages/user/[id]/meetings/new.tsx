@@ -8,6 +8,8 @@ import { getUserDetails } from '../../../../lib/api/users/[id]/getUserDetails'
 import {getSession} from '../../../../lib/api/utils/getSession'
 import UserDetailsView from '../../../../components/User/UserDetailsView'
 import { UserDetails } from '../../../../lib/api/users/UserDetails'
+import PreviewShowsInCommon from '../../../../components/User/PreviewShowsInCommon'
+import { createLogger, LoggerTypes } from '../../../../lib/logger'
 
 export type NewMeetingWithUserProps = {
 	user: UserDetails
@@ -22,6 +24,7 @@ const useStyles = makeStyles({
 export async function getServerSideProps(context: NextPageContext):
 	Promise<{props: NewMeetingWithUserProps | undefined}>
 {
+	const logger = createLogger(LoggerTypes.NewMeetingGetServerSideProps)
 	let userId: number = undefined
 	try {
 		userId = parseInt(context.query.id as string)
@@ -38,14 +41,18 @@ export async function getServerSideProps(context: NextPageContext):
 		context.res.end()
 		return {props: undefined}
 	}
+	const user = await getUserDetails(
+		userId,
+		session.user.id,
+		false
+	)
+	logger.info({
+		user
+	})
 
 	return {
 		props: {
-			user: await getUserDetails(
-				userId,
-				session.user.id,
-				false
-			)
+			user
 		}
 	}
 }
@@ -103,6 +110,11 @@ export default function NewMeetingWithUser({
 							user={user}
 						/>
 					}
+				</Box>
+				<Box>
+					<PreviewShowsInCommon
+						shows={user.liked}
+					/>
 				</Box>
 			</Layout>
 		</Protected>

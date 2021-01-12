@@ -1,13 +1,14 @@
 import { constants } from 'http2'
 import {
-	addFriend, AddFriendErrorType, isAddFriendError
-} from 'lib/api/users/[id]/addFriend'
+	AddFriendActionType,
+	AddFriendErrorType,
+	friendRequest,
+	isAddFriendError
+} from 'lib/api/users/[id]/friendRequest'
 import HTTPMethod from 'lib/utils/HTTPMethod'
 import assertUnreachable from 'lib/utils/assertUnreachable'
 import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
-import { Add } from '@material-ui/icons'
 import { getIdAsNumber, setMessageAsErrorTypeGenerator } from '../../../../lib/api/utils/validation'
-import { GetUserDetailsErrorType } from '../../../../lib/api/users/[id]/getUserDetails'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,
@@ -22,24 +23,48 @@ export default protectedApiHandler(async (
 ): Promise<void> => {
 	const userId = session.user.id
 
-	const {id: friendId, error} = getIdAsNumber(req, res)
-	if(error) {
+	const { id: friendId, error } = getIdAsNumber(req, res)
+	if (error) {
 		return
 	}
 
-	const isCancel = Boolean(req.query['cancel'])
+	let action: AddFriendActionType
+	let isCancel = false
+	switch (req.method) {
+		case HTTPMethod.POST:
+			action = AddFriendActionType.SendFriendRequest
+			break
+		case HTTPMethod.PATCH:
+			action = AddFriendActionType.AcceptFriendRequest
+			break
+		case HTTPMethod.DELETE: {
+			isCancel = Boolean(req.query['cancel'])
+			if(isCancel) {
+				action = AddFriendActionType.CancelFriendRequest
+			} else {
+				action = AddFriendActionType.Unfriend
+			}
+			break
+		}
+		default: {
+			res.statusWithLogMessage(
+				HTTP_STATUS_METHOD_NOT_ALLOWED,
+				`invalid method in friend request`
+			)
+			res.end()
+			return
+		}
+	}
 	try {
-		await addFriend(
+		await friendRequest(
 			userId,
 			friendId,
 			{
-				isCancel,
-				method: req.method as HTTPMethod
+				action
 			}
 		)
 	} catch (e) {
 		if (isAddFriendError(e)) {
-
 			const setMessageAsErrorType = setMessageAsErrorTypeGenerator(
 				AddFriendErrorType,
 				e.addFriendErrorType,

@@ -1,9 +1,14 @@
 import { mapUserToUserPublicSearchResult } from 'lib/api/users/UserPublic'
 import prisma from 'lib/prisma/prisma'
-import { FriendRequests, FriendshipType, MeetingState, User } from '@prisma/client'
+import { FriendRequests, FriendshipType, MediaLikeState, MeetingState, User } from '@prisma/client'
 import { mapUserToKnownFriend, UserDetails } from '../UserDetails'
 import { mapMeetingToMeetingFriendResult, MeetingFriendResult } from '../../meetings/MeetingFriendResult'
 import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
+import { mediaLikeToId } from '../../../tmdb/api/id'
+import getShowDetails from '../../shows/getShowDetails'
+import { createLogger, LoggerTypes } from '../../../logger'
+import { stripDetails, StrippedShowDetails } from '../../shows/[id]/StrippedShowDetails'
+import { mapShowLiked } from '../../shows/[id]/isShowLiked'
 
 export enum GetUserDetailsErrorType {
 	/** FIXME: ignore edge case
@@ -11,21 +16,26 @@ export enum GetUserDetailsErrorType {
 	 */
 	CantGetInformationAboutYourself,
 	UserIdDoesntExist,
-	ClientLiedAboutBeingFriends
+	ClientLiedAboutBeingFriends,
 }
+const logger = createLogger(LoggerTypes.GetUserDetails)
+
+export const GET_USER_DETAILS_LIKED_SHOWS_TAKE_FIRST_NUM = 10
 
 export class GetUserDetailsError extends
 	ErrorInLibWithLogging<GetUserDetailsErrorType>
 {
 	constructor(
 		public getUserDetailsErrorType: GetUserDetailsErrorType,
-		public mapMessage?: unknown
+		public mapMessage?: string
 	) {
 		super(
-			LibErrorType.GetUserDetails,
-			LibErrorType,
-			getUserDetailsErrorType,
-			JSON.stringify(mapMessage)
+			{
+				libErrorType: LibErrorType.GetUserDetails,
+				innerEnum: GetUserDetailsErrorType,
+				innerErrorEnumValue: getUserDetailsErrorType,
+				libErrorMessage: mapMessage
+			}
 		)
 	}
 }
@@ -180,6 +190,12 @@ export async function getUserDetails(
 			id: userIdInQuestion
 		},
 		include: {
+			liked: {
+				where: {
+					state: MediaLikeState.LIKED
+				},
+				take: GET_USER_DETAILS_LIKED_SHOWS_TAKE_FIRST_NUM,
+			},
 			friendRequestsSent:
 				{
 					where: {
@@ -226,6 +242,18 @@ export async function getUserDetails(
 			GetUserDetailsErrorType.UserIdDoesntExist
 		)
 	}
+	let likedPromises: Promise<StrippedShowDetails>[] = []
+	if(user.liked.length > 0) {
+		// If empty liked shows no need
+		likedPromises = user.liked.map(async mediaLike => {
+			const tmdbId = mediaLikeToId(mediaLike)
+			const showDetails = await getShowDetails(tmdbId)
+			const strippedDetails = stripDetails(showDetails)
+			const mapLikedFunc = mapShowLiked(sessionUserId)
+			return await mapLikedFunc(strippedDetails) as StrippedShowDetails
+		})
+		// we await later
+	}
 	let areFriends = false, areFriendsSince: Date = undefined
 	const ifAreFriends = (fr: FriendRequests, user: User) => {
 		if(areFriends) return
@@ -266,11 +294,31 @@ export async function getUserDetails(
 			)
 	}
 	const userWithFriendStatus = mapUserToUserPublicSearchResult(user)
-	return {
+
+	// await liked response
+	const likedResults =
+		await Promise.allSettled(likedPromises)
+	const liked = likedResults.flatMap(result => {
+		if(result.status === 'rejected') {
+			logger.error({
+				msg: `promise rejected when getting liked show info`,
+				err: result.reason
+			})
+			return []
+		} else {
+			return [result.value]
+		}
+	})
+	logger.info({liked})
+
+	const rv = {
 		...userWithFriendStatus,
 		friends,
 		meetings,
+		liked,
 		registeredAt: user.createdAt.toISOString(),
 		friendsAt: areFriendsSince && areFriendsSince.toISOString()
 	}
+
+	return rv
 }

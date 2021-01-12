@@ -17,12 +17,16 @@ export class GetFriendsError extends
 	constructor(
 		public getFriendsErrorType: GetFriendsErrorType,
 		public mapMessage?: unknown,
+		public parentError?: Error
 	) {
 		super(
-			LibErrorType.GetFriends,
-			GetFriendsErrorType,
-			getFriendsErrorType,
-			JSON.stringify(mapMessage)
+			{
+				libErrorType: LibErrorType.GetFriends,
+				innerEnum: GetFriendsErrorType,
+				innerErrorEnumValue: getFriendsErrorType,
+				parentError,
+				libErrorMessage: JSON.stringify(mapMessage)
+			}
 		)
 	}
 }

@@ -7,6 +7,9 @@ import {
 	toFriendRequestSent as toFriendRequestSentInner
 } from '../friends/mapFriendsDbToClient'
 import { FriendshipTypeResponse } from './[id]/FriendshipType'
+import { TmdbId, TmdbIdSerialized } from '../../tmdb/api/id'
+import { TMDBTvGetDetailsResponse } from '../../tmdb/api/tv_get_details'
+import { StrippedShowDetails } from '../shows/[id]/StrippedShowDetails'
 
 /*
 export type UserDetails = UserPublicSearchResult & {
@@ -23,7 +26,7 @@ export type Friend = Omit<UserPublicSearchResult, 'status'>
 export type UserDetails = UserPublicSearchResult & {
 	friends: Friend[],
 	meetings: MeetingFriendResult[],
-	// liked:
+	liked: StrippedShowDetails[],
 	/** iso date */
 	registeredAt: string,
 	/** iso date */

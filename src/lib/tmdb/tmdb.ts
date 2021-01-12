@@ -39,37 +39,47 @@ export enum TmdbErrorType {
 	Redis,
 	Tmdb,
 	Http,
-	NoApiKey
+	NoApiKey,
 }
 
 const traceLogger = createLogger(LoggerTypes.Tmdb, false)
 
 export type TmdbErrorTmdbResponse = {
-	body: string,
-	statusCode: number,
-	headers: IncomingHttpHeaders
+	response: {
+		body: string,
+		statusCode: number,
+		statusMessage: string,
+		headers: IncomingHttpHeaders
+	}
 	// headers: response.rawHeaders
 } & Record<string, unknown>
 
 export class TmdbError<T extends TmdbErrorType>
 	extends ErrorInLibWithLogging<TmdbErrorType> {
+	tmdbErrorTypeString: string
+
 	constructor(
 		public tmdbErrorType: T,
-		public tmdbMessage: T extends TmdbErrorType.Tmdb ?
-			TmdbErrorTmdbResponse : string
+		public tmdbMessage: unknown,
+		public parentError?: unknown
 	) {
 		super(
-			LibErrorType.Tmdb,
-			TmdbErrorType,
-			tmdbErrorType,
-			JSON.stringify(tmdbMessage)
+			{
+				innerEnum: TmdbErrorType,
+				innerErrorEnumValue: tmdbErrorType,
+				libErrorMessage: JSON.stringify(tmdbMessage),
+				libErrorType: LibErrorType.Tmdb,
+				parentError,
+				parentLogger: undefined
+			}
 		)
+		this.tmdbErrorTypeString = TmdbErrorType[tmdbErrorType]
 	}
 }
 
 export function isTmdbError<T extends TmdbErrorType>(err: Error):
 	err is TmdbError<T> {
-	return err && typeof err === 'object' && 'tmdbMessage' in err
+	return err && typeof err === 'object' && 'tmdbErrorType' in err
 }
 
 class TmdbClient {
@@ -135,10 +145,11 @@ class TmdbClient {
 
 		try {
 			cache = await this.redis.get(redisKey)
-		} catch {
+		} catch (e) {
 			throw new TmdbError(
 				TmdbErrorType.Redis,
-				`get ${redisKey}`
+				`get ${redisKey}`,
+				e
 			)
 		}
 
@@ -157,13 +168,24 @@ class TmdbClient {
 		/* Make request to TMDb*/
 		let response: GOTResponse<string>
 		try {
-			response = await got(apiUrl, {
-				method: method as GOTMethod
-			})
+			response = await got(
+				apiUrl,
+				{
+					method: method as GOTMethod
+				}
+			)
 		} catch (e) {
 			throw new TmdbError(
 				TmdbErrorType.Http,
-				`http get "${apiUrl}" with ${method} ${JSON.stringify(e)}`
+				`http get "${apiUrl}" with ${method} ${response}`,
+				{
+					error: e,
+					response: response && {
+						status: response.statusCode,
+						body: response.body,
+						headers: response.headers
+					}
+				}
 			)
 		}
 
@@ -174,23 +196,43 @@ class TmdbClient {
 			void this.redis.set(redisKey, response.body).catch((reason) => {
 				throw new TmdbError(
 					TmdbErrorType.Redis,
-					`set ${redisKey}, reason: ${reason}`
+					`set ${redisKey}`,
+					reason
 				)
 			})
 		} else {
 			/* Invalid response from TMDb */
+			switch (response.statusCode) {
+				case 404:
+					throw new TmdbError(
+						// This is very important, it is used by
+						// the likeShow function to check whether the show exists
+						TmdbErrorType.Tmdb,
+						{
+							msg: 'resource not found in tmdb',
+							response: {
+								body: response.body,
+								statusCode: response.statusCode,
+								statusMessage: response.statusMessage,
+								headers: response.headers
+							}
+						}
+					)
+				default:
+					throw new TmdbError(
+						TmdbErrorType.Tmdb,
+						{
+							msg: 'invalid response from tmdb',
+							response: {
+								body: response.body,
+								statusCode: response.statusCode,
+								statusMessage: response.statusMessage,
+								headers: response.headers
+							}
+						}
+					)
+			}
 
-			throw new TmdbError(
-				TmdbErrorType.Tmdb,
-				{
-					message: 'invalid response from tmdb',
-					body: response.body,
-					statusCode: response.statusCode,
-					headers: response.headers
-
-					// headers: response.rawHeaders
-				}
-			)
 		}
 
 		return JSON.parse(response.body)
