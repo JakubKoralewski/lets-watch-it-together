@@ -10,7 +10,7 @@ export default function Protected(
 	const router = useRouter()
 	const [session, loading] = useSession()
 
-	if (typeof window !== 'undefined' || loading) return null
+	if (typeof window !== 'undefined' && loading) return null
 
 	if (!session) {
 		if(process.browser) {
