@@ -1,7 +1,30 @@
-require('dotenv').config()
+require('dotenv').config({ debug: true })
+
+if (require.main === module) {
+	const fileIndex = process.argv.findIndex(
+		(val) => val.endsWith('initiateDb.ts')
+	)
+	const optionalArguments = process.argv.slice(fileIndex + 1)
+	console.log({ optionalArguments })
+	let dbUrl: string
+	if (optionalArguments.length >= 1) {
+		if (optionalArguments.length === 1) {
+			dbUrl = optionalArguments[0].trim()
+			if (!dbUrl.startsWith('postgres://')) {
+				throw Error('invalid db url')
+			} else {
+				console.log('valid db url provided. will use')
+				process.env.DATABASE_URL = dbUrl
+			}
+		} else {
+			throw Error('invalid arguments')
+		}
+	}
+}
+import { PrismaClient, User } from '@prisma/client'
+import prisma from 'lib/prisma/prisma'
 import { likeShow, LikeShowActionType } from '../../src/lib/api/shows/[id]/likeShow'
 /* eslint-disable no-console */
-import { PrismaClient, User } from '@prisma/client'
 import {
 	AddFriendActionType,
 	AddFriendErrorType,
@@ -14,17 +37,6 @@ import {
 	TmdbIdType
 } from '../../src/lib/tmdb/api/id'
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace NodeJS {
-	interface Process {
-		readonly browser: boolean
-	}
-
-	interface ProcessEnv {
-		readonly NODE_ENV: 'development' | 'production' | 'test'
-	}
-}
-
 const promptly = require('promptly')
 
 const likedShowsInCommon: TmdbId[] = [
@@ -32,7 +44,7 @@ const likedShowsInCommon: TmdbId[] = [
 		// https://www.themoviedb.org/tv/1396-breaking-bad
 		id: 1396,
 		type: TmdbIdType.Show
-	},
+	}
 ]
 
 const users: (Pick<User, 'name' | 'image'> & { liked?: TmdbId[] })[] = [
@@ -218,11 +230,11 @@ export default async function initiateDb(prisma: PrismaClient): Promise<void> {
 			}
 		}
 		console.log(
-			`Also adding the chosen user ${chosenUser.name}`+
-			`some shows so they have them in common with ${otherUsers[0].name}`
+			`Also adding the chosen user ${chosenUser.name}` +
+			`some shows so they have them in common with ${dummyUsersIds[0]}`
 		)
 		try {
-			for(const show of likedShowsInCommon) {
+			for (const show of likedShowsInCommon) {
 				console.log(`liking ${show.id}`)
 				await likeShow(
 					chosenUser.id,
@@ -233,7 +245,7 @@ export default async function initiateDb(prisma: PrismaClient): Promise<void> {
 				)
 			}
 			console.log('success adding liked shows in common')
-		} catch(e) {
+		} catch (e) {
 			console.error('unknown error while adding common liked shows', e)
 			console.log('ignoring')
 		}
@@ -244,31 +256,6 @@ export default async function initiateDb(prisma: PrismaClient): Promise<void> {
 }
 
 if (require.main === module) {
-	const fileIndex = process.argv.findIndex(
-		(val) => val.endsWith('initiateDb.ts')
-	)
-	const optionalArguments = process.argv.slice(fileIndex + 1)
-	console.log({ optionalArguments })
-	let dbUrl: string
-	if (optionalArguments.length >= 1) {
-		if (optionalArguments.length === 1) {
-			dbUrl = optionalArguments[0]
-			if (!dbUrl.startsWith('postgres://')) {
-				throw Error('invalid db url')
-			} else {
-				console.log('valid db url provided. will use')
-			}
-		} else {
-			throw Error('invalid arguments')
-		}
-	}
-	const prisma = new PrismaClient(dbUrl ? {
-		datasources: {
-			db: {
-				url: dbUrl
-			}
-		}
-	} : undefined)
 	const disconnect = async () => {
 		console.log('disconnecting')
 		await prisma.$disconnect().catch(err => {
