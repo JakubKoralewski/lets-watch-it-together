@@ -30,15 +30,15 @@ export class AddFriendError extends ErrorInLibWithLogging<AddFriendErrorType> {
 	constructor(
 		public addFriendErrorType: AddFriendErrorType,
 		public parentLogger: Logger,
-		public mapMessage?: unknown,
-		public parentError?: Error
+		public mapMessage?: string,
+		parentError?: Error
 	) {
 		super(
 			{
 				libErrorType: LibErrorType.AddFriend,
 				innerEnum: AddFriendErrorType,
 				innerErrorEnumValue: addFriendErrorType,
-				libErrorMessage: JSON.stringify(mapMessage),
+				libErrorMessage: mapMessage,
 				parentLogger: parentLogger,
 				parentError
 			}
@@ -128,6 +128,12 @@ export async function friendRequest(
 			assertUnreachable(action)
 		}
 	}
+	logger.debug({
+		msg: `friendRequest`,
+		action,
+		potentialFriend,
+		getPotentialFriendQuery
+	})
 	let updatedUser: User
 
 	switch (action) {
@@ -179,15 +185,14 @@ export async function friendRequest(
 						'success accepting friend request',
 						JSON.stringify({ updatedUser })
 					)
+					break
 				}
 			} else if (potentialFriend.friendRequestsSent.length > 1) {
 				throw new AddFriendError(
 					AddFriendErrorType.DbCorrupt,
 					logger
 				)
-			}
-
-			if (potentialFriend.friendRequestsReceived.length === 1) {
+			} else if (potentialFriend.friendRequestsReceived.length === 1) {
 				// you have already sent a friend request
 				// and you talk to me to add that friend again, what do?
 				if (isAccept) {
