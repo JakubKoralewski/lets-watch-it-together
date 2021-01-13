@@ -111,7 +111,9 @@ export default function PreviewShowsInCommon(
 					onChange={handleChange}
 				>
 					<Tab label="Shows you both like" />
+{/*
 					<Tab label="View all their liked shows" />
+*/}
 				</Tabs>
 			</Paper>
 			<Container>

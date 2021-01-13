@@ -235,10 +235,7 @@ export async function friendRequest(
 										connect: {
 											id: yourId
 										}
-									},
-									acceptedAt: isAccept ?
-										new Date() :
-										undefined
+									}
 								}
 							}
 						}
