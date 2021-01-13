@@ -69,6 +69,7 @@ export default function UserSmall(
 	}, [])
 	const onNewMeetingButtonClick = async () => {
 		onNewMeetingPress && onNewMeetingPress()
+		console.log({routerUrl})
 		await router.push(
 			routerUrl,
 			undefined
@@ -96,24 +97,24 @@ export default function UserSmall(
 				{additionalContent}
 			</CardContent>
 			<CardActions>
-				{!isLoading &&
-
-				<ToggleFriendButton
-					sendFriendRequest={sendFriendRequest}
-					cancelFriendRequest={cancelFriendRequest}
-					acceptFriendRequest={acceptFriendRequest}
-					unfriend={unfriend}
-					userStatus={userStatus}
-					userId={user.id}
-					setUserStatus={setUserStatus}
-					onClick={onFriendToggle}
-				/>
+				{
+					!isLoading &&
+										<ToggleFriendButton
+											sendFriendRequest={sendFriendRequest}
+											cancelFriendRequest={cancelFriendRequest}
+											acceptFriendRequest={acceptFriendRequest}
+											unfriend={unfriend}
+											userStatus={userStatus}
+											userId={user.id}
+											setUserStatus={setUserStatus}
+											onClick={onFriendToggle}
+										/>
 				}
 				{
 					!isLoading && onNewMeetingPress && isFriend(user) &&
-						<CreateMeetingButton
-							onClick={onNewMeetingButtonClick}
-						/>
+										<CreateMeetingButton
+											onClick={onNewMeetingButtonClick}
+										/>
 				}
 			</CardActions>
 		</Card>

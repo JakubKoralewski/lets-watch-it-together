@@ -9,7 +9,7 @@ const {
 } = constants
 
 export default protectedApiHandler(async (req, res, session) => {
-	const userId: number = session.user['id']
+	const userId: number = session.user.id
 
 	switch (req.method) {
 		case HTTP2_METHOD_GET: {

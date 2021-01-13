@@ -11,7 +11,7 @@ import { stagesToPathsMap } from './[welcome_stage]'
 import { Stages } from '../../../components/pages/welcome/stages'
 
 
-export function Finished() {
+export function Finished(): JSX.Element {
 	return <>{'That\'s all! Have fun! You are being redirected.'}</>
 }
 
@@ -35,8 +35,8 @@ export const stagesMap = {
 export function WelcomeInner(
 	{
 		onFinish,
-		stage: defaultStage=0
-	}: {onFinish: () => void, stage?: number}
+		stage: defaultStage = 0
+	}: { onFinish: () => void, stage?: number }
 ): JSX.Element {
 	const [stage, setStage] = useState<Stages>(defaultStage)
 
@@ -52,15 +52,19 @@ export function WelcomeInner(
 		if (stage === Stages.Finished) {
 			onFinish()
 		}
-		if(isMount.current) {
+		if (isMount.current) {
 			isMount.current = false
 			return
 		}
-		window.history.pushState(
-			undefined,
-			undefined,
-			`/app/welcome/${stagesToPathsMap[stage]}`
-		)
+		if(window.location.pathname.includes('app/welcome')) {
+			// only redirect if on /app/welcome cause i think it breaks
+			// hmr in /app
+			window.history.pushState(
+				undefined,
+				undefined,
+				`/app/welcome/${stagesToPathsMap[stage]}`
+			)
+		}
 	}, [stage])
 
 	return (

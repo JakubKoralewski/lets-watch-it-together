@@ -1,14 +1,21 @@
-import { deserializeId, serializeId, TmdbIdSerialized } from '../../lib/tmdb/api/id'
+import { deserializeId, serializeId, TmdbId, TmdbIdSerialized } from '../../lib/tmdb/api/id'
 import { Container, Paper, Tab, Tabs } from '@material-ui/core'
-import ShowSmall from '../Show/ShowSmall'
+import ShowSmall, { ShowSmallProps } from '../Show/ShowSmall'
 import { StrippedShowDetails } from '../../lib/api/shows/[id]/StrippedShowDetails'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import assertUnreachable from '../../lib/utils/assertUnreachable'
 
 export interface PreviewShowsInCommonProps {
-	shows: StrippedShowDetails[]
+	shows: StrippedShowDetails[],
+	selected?: {
+		// current: TmdbId,
+		isSelected: (showId: TmdbId) => boolean,
+		// thisOneIs: boolean,
+		onOneSelected: (show: StrippedShowDetails) => void
+	}
 }
+
 enum PreviewShowsInCommonType {
 	ShowsYouBothLike,
 	TheirLikedShows
@@ -16,15 +23,26 @@ enum PreviewShowsInCommonType {
 
 export default function PreviewShowsInCommon(
 	{
-		shows
+		shows,
+		selected
 	}: PreviewShowsInCommonProps
 ): JSX.Element {
 	const [value, setValue] = useState(
 		PreviewShowsInCommonType.ShowsYouBothLike
-	);
+	)
 
 	let toShow: JSX.Element
-	switch(value) {
+	let selectPropsForShowSmallGenerate:
+		((id: TmdbId) => ShowSmallProps['selected']) | (() => undefined) = (_) => undefined
+
+	if(selected) {
+		selectPropsForShowSmallGenerate = (id: TmdbId) => ({
+			onSelect: selected.onOneSelected,
+			isSelected: selected.isSelected(id)
+		})
+	}
+
+	switch (value) {
 		case PreviewShowsInCommonType.ShowsYouBothLike:
 			if (shows.length === 0) {
 				toShow = <motion.div
@@ -41,6 +59,7 @@ export default function PreviewShowsInCommon(
 							<ShowSmall
 								key={serializeId(show.id)}
 								show={show}
+								selected={selectPropsForShowSmallGenerate(show.id)}
 							/>
 						)
 					}
@@ -63,6 +82,7 @@ export default function PreviewShowsInCommon(
 							<ShowSmall
 								key={serializeId(show.id)}
 								show={show}
+								selected={selectPropsForShowSmallGenerate(show.id)}
 							/>
 						)
 					}
@@ -73,9 +93,12 @@ export default function PreviewShowsInCommon(
 			assertUnreachable(value)
 	}
 
-	const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-		setValue(newValue);
-	};
+	const handleChange = (
+		event: React.ChangeEvent<Record<never, never>>,
+		newValue: number
+	) => {
+		setValue(newValue)
+	}
 
 	return (
 		<Container>

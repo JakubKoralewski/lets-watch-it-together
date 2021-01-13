@@ -4,7 +4,7 @@
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--inspect' next dev | npx pino-pretty -t",
+    "dev": "cross-env NODE_OPTIONS='--inspect' next dev | npx pino-pretty -t -f",
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --pretty --noEmit",
@@ -15,12 +15,15 @@
     "dev-seed": "ts-node -r tsconfig-paths/register -P prisma/seeding/tsconfig.script.json prisma/seeding/initiateDb.ts | npx pino-pretty -t"
   },
   "dependencies": {
+    "@date-io/date-fns": "^1.3.13",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
+    "@material-ui/pickers": "^3.2.10",
     "@prisma/client": "^2.14.0",
     "@reduxjs/toolkit": "^1.5.0",
     "@types/redis": "^2.8.28",
+    "date-fns": "^2.16.1",
     "framer-motion": "^3.1.1",
     "got": "^11.8.1",
     "lodash": "^4.17.20",
