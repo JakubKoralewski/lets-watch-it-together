@@ -4,7 +4,7 @@ import Layout from '../../components/Layout'
 import { WelcomeInner } from './welcome'
 import { useState } from 'react'
 
-export default function App() {
+export default function App(): JSX.Element {
 	const [finished, setFinished] = useState(false)
 	return (
 		<Protected>

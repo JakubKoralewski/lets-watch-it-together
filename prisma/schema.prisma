@@ -86,6 +86,7 @@ model FriendRequests {
   unfriendedAt           DateTime?        @map(name: "unfriended_at")
 
   @@id([requesterId, requesteeId])
+  @@unique([requesterId, requesteeId])
   @@index([friendshipType])
   @@map(name: "friend_requests")
 }

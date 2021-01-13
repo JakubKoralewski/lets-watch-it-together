@@ -1,6 +1,6 @@
 import {
 	Button,
-	makeStyles,
+	makeStyles
 } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
@@ -18,7 +18,12 @@ import {
 export interface ShowSmallProps {
 	show: StrippedShowDetails,
 	className?: string,
-	onPrimaryActionTaken?: () => void
+	onPrimaryActionTaken?: () => void,
+	selected?: {
+		onSelect: (show: StrippedShowDetails) => void,
+		isSelected: boolean
+	} | undefined,
+	disableLiking?: boolean
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -47,7 +52,9 @@ export default function ShowSmall(
 	{
 		show,
 		className,
-		onPrimaryActionTaken
+		onPrimaryActionTaken,
+		selected: selectedInfo,
+		disableLiking
 	}: ShowSmallProps
 ): JSX.Element {
 	const classes = useStyles()
@@ -59,9 +66,9 @@ export default function ShowSmall(
 	 */
 	const firstUpdate = useRef(true)
 	useEffect(() => {
-		if(firstUpdate.current) {
+		if (firstUpdate.current) {
 			firstUpdate.current = false
-			return;
+			return
 		}
 		sendShowLike(show.id.id, liked).then(() => {
 			console.log({
@@ -71,8 +78,38 @@ export default function ShowSmall(
 		})
 		onPrimaryActionTaken && onPrimaryActionTaken()
 	}, [liked])
+
+	let selectButton: JSX.Element | null
+	if (selectedInfo) {
+		selectButton = <Button
+			variant={`contained`}
+			color={`secondary`}
+			disabled={selectedInfo.isSelected}
+			onClick={() => selectedInfo.onSelect(show)}
+		>
+			{
+				selectedInfo.isSelected ? `Selected` : `Select`
+			}
+		</Button>
+	}
+	let likeButton: JSX.Element | null
+	if (!disableLiking) {
+		likeButton = <Button
+			variant={!liked ? 'contained' : 'outlined'}
+			color={!liked ? 'primary' : 'secondary'}
+			onClick={() => setLiked(liked => !liked)}
+		>
+			{
+				liked ? 'Unlike' : 'Like'
+			}
+		</Button>
+	}
+
 	return (
-		<Card className={className}>
+		<Card
+			className={className}
+			style={{ display: `inline-block` }}
+		>
 			<CardContent>
 				<img
 					alt={`${show.name}'s poster`}
@@ -87,23 +124,12 @@ export default function ShowSmall(
 				</Typography>
 			</CardContent>
 			<CardActions>
-				<Button
-					variant={!liked ? 'contained' : 'outlined'}
-					color={!liked ? 'primary' : 'secondary'}
-					onClick={() => setLiked(liked => !liked)}
-				>
-					{
-						liked ? 'Unlike' : 'Like'
-					}
-				</Button>
-
-				{/*{*/}
-				{/*	buttonType(*/}
-				{/*		buttonText,*/}
-				{/*		onClickWithPrimaryAction,*/}
-				{/*		buttonColor*/}
-				{/*	)*/}
-				{/*}*/}
+				{
+					likeButton
+				}
+				{
+					selectButton
+				}
 			</CardActions>
 		</Card>
 	)

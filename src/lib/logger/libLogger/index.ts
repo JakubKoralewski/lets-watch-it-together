@@ -14,6 +14,7 @@ export enum LibErrorType {
 	Tmdb,
 	NextAuth,
 	LikeShow,
+	MeetingRequest
 }
 
 export interface ErrorInLibWithLoggingParams<InnerEnumType> {

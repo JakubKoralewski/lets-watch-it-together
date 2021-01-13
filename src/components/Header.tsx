@@ -20,6 +20,10 @@ import { Avatar } from '@material-ui/core'
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
+		fixA: {
+			textDecoration: 'none',
+			color: 'initial'
+		},
 		grow: {
 			flexGrow: 1
 		},
@@ -233,15 +237,20 @@ const Header: React.FC = () => {
 						<MenuIcon />
 					</IconButton>
 					<Link
-						href={'app'}
+						href={'/app'}
 					>
-						<Typography
-							className={classes.title}
-							variant="h6"
-							noWrap
+						<a
+							className={classes.fixA}
+							style={{color: 'white'}}
 						>
-							{`Let's Watch It Together`}
-						</Typography>
+							<Typography
+								className={classes.title}
+								variant="h6"
+								noWrap
+							>
+								{`Let's Watch It Together`}
+							</Typography>
+						</a>
 					</Link>
 					<div className={classes.search}>
 						<div className={classes.searchIcon}>

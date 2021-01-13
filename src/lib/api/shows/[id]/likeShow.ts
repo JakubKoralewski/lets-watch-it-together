@@ -4,7 +4,6 @@ import prisma from '../../../prisma/prisma'
 import { TmdbMediaType, User } from '@prisma/client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
-import { GetFriendsError } from '../../friends/getFriends'
 
 export enum LikeShowActionType {
 	Like,
