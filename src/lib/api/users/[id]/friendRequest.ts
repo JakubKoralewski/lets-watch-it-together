@@ -167,7 +167,7 @@ export async function friendRequest(
 										},
 										data: {
 											friendshipType:
-											FriendshipType.ACCEPTED,
+												FriendshipType.ACCEPTED,
 											acceptedAt: new Date()
 										}
 									}
@@ -219,13 +219,13 @@ export async function friendRequest(
 							connectOrCreate: {
 								where: {
 									requesterId_requesteeId: {
-										requesteeId: yourId,
-										requesterId: friendId
+										requesteeId: friendId,
+										requesterId: yourId
 									}
 								},
 								create: {
 									friendshipType:
-									FriendshipType.REQUESTED,
+										FriendshipType.REQUESTED,
 									requester: {
 										connect: {
 											id: yourId
@@ -274,7 +274,7 @@ export async function friendRequest(
 								},
 								data: {
 									friendshipType:
-									FriendshipType.CANCELLED,
+										FriendshipType.CANCELLED,
 									cancelledAt: new Date()
 								}
 							}
