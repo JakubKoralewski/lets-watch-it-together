@@ -1,8 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-	"baseUrl": "../../",
+//	"baseUrl": "",
 	"module": "commonjs",
 	"moduleResolution": "Node"
-  }
+  }//,
+//  "include": ["../../src/**/*.ts", "../../next-env.d.ts"]
 }

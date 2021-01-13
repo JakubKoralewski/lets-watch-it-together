@@ -1,6 +1,7 @@
 import tmdb, { isTmdbError, TmdbErrorTmdbResponse, TmdbErrorType, TmdbPath, TvGetDetails } from 'lib/tmdb/tmdb'
 import { TMDBTvGetDetailsResponse } from '../../tmdb/api/tv_get_details'
 import { TmdbId, TmdbIdType } from '../../tmdb/api/id'
+import { ErrorInLibWithLogging, LibErrorType } from '../../logger/libLogger'
 
 export enum GetShowDetailsErrorType {
 	Other,
@@ -9,19 +10,29 @@ export enum GetShowDetailsErrorType {
 	NotAShowId
 }
 
-export class GetShowDetailsError extends Error {
+export class GetShowDetailsError
+	extends ErrorInLibWithLogging<GetShowDetailsErrorType> {
 	constructor(
-		public errorType: GetShowDetailsErrorType,
+		public getShowDetailsErrorType: GetShowDetailsErrorType,
 		public mapMessage?: string,
+		public parentError?: Error,
 	) {
-		super(mapMessage)
+		super(
+			{
+				parentLogger: undefined,
+				parentError,
+				libErrorType: LibErrorType.GetShowDetails,
+				libErrorMessage: mapMessage,
+				innerErrorEnumValue: getShowDetailsErrorType,
+				innerEnum: GetShowDetailsErrorType
+			}
+		)
 	}
 }
 
 export function isGetShowDetailsError(err: unknown):
-	err is GetShowDetailsError
-{
-	return Boolean(err && typeof err === 'object' && 'mapMessage' in err);
+	err is GetShowDetailsError {
+	return Boolean(err && typeof err === 'object' && 'getShowDetailsErrorType' in err)
 }
 
 export default async function getShowDetails(
@@ -50,24 +61,27 @@ export default async function getShowDetails(
 			}
 		}
 	} catch (e) {
-		if(isTmdbError(e)) {
-			if(e.tmdbErrorType === TmdbErrorType.Tmdb) {
-				if((e.tmdbMessage as TmdbErrorTmdbResponse).statusCode === 404) {
+		if (isTmdbError(e)) {
+			if (e.tmdbErrorType === TmdbErrorType.Tmdb) {
+				if ((e.tmdbMessage as TmdbErrorTmdbResponse).statusCode === 404) {
 					throw new GetShowDetailsError(
 						GetShowDetailsErrorType.NotFound,
-						JSON.stringify(e)
+						undefined,
+						e
 					)
 				}
 			} else {
 				throw new GetShowDetailsError(
 					GetShowDetailsErrorType.Tmdb,
-					JSON.stringify(e)
+					undefined,
+					e
 				)
 			}
 		} else {
 			throw new GetShowDetailsError(
 				GetShowDetailsErrorType.Other,
-				JSON.stringify(e)
+				undefined,
+				e
 			)
 		}
 	}

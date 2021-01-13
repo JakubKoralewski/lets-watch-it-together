@@ -1,24 +1,24 @@
 {
-  "name": "with-typescript-eslint-jest",
-  "author": "@erikdstock",
+  "name": "lets-watch-it-together",
+  "author": "@JakubKoralewski",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS='--inspect' next dev | npx pino-pretty -t",
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --pretty --noEmit",
     "format": "prettier --write .",
     "lint": "eslint . --ext ts --ext tsx --ext js",
     "test": "jest",
-    "test-all": "yarn lint && yarn type-check && yarn test",
-    "dev-seed": "ts-node -P ./prisma/seeding/tsconfig.json ./prisma/seeding/initiateDb.ts"
+    "test-all": "npm run test && npm run type-check",
+    "dev-seed": "ts-node -r tsconfig-paths/register -P prisma/seeding/tsconfig.script.json prisma/seeding/initiateDb.ts | npx pino-pretty -t"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
-    "@prisma/client": "^2.13.1",
+    "@prisma/client": "^2.14.0",
     "@reduxjs/toolkit": "^1.5.0",
     "@types/redis": "^2.8.28",
     "framer-motion": "^3.1.1",
@@ -28,23 +28,29 @@
     "next": "latest",
     "next-auth": "^3.1.0",
     "next-pwa": "^5.0.1",
+    "pino": "^6.10.0",
+    "pino-caller": "^3.0.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.2",
     "redis": "^3.0.2",
     "sharp": "^0.27.0",
-    "typescript": "^4.1"
+    "swr": "^0.4.0"
   },
   "devDependencies": {
-    "@prisma/cli": "^2.13.1",
+    "@prisma/cli": "^2.14.0",
     "@testing-library/react": "^10.0.1",
     "@types/jest": "^25.1.4",
+    "@types/lodash": "^4.14.167",
     "@types/next-auth": "^3.1.18",
     "@types/node": "^13.13.38",
+    "@types/pino": "^6.3.5",
     "@types/react": "^16.14.2",
+    "@types/react-redux": "^7.1.15",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
     "babel-jest": "^25.2.3",
+    "cross-env": "^7.0.3",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-react": "^7.19.0",
@@ -54,6 +60,11 @@
     "jest-watch-typeahead": "^0.5.0",
     "lint-staged": "^10.0.10",
     "node-fetch": "^2.6.1",
-    "prettier": "^2.2.1"
+    "pino-pretty": "^4.3.0",
+    "prettier": "^2.2.1",
+    "promptly": "^3.2.0",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.2.0-dev.20201211"
   }
 }

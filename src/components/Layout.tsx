@@ -1,15 +1,18 @@
 import React, { ReactNode } from 'react'
 import Header from './Header'
+import { Box, Container } from '@material-ui/core'
 
 type Props = {
 	children: ReactNode
 }
 
 const Layout: React.FC<Props> = (props) => (
-	<div>
+	<Box>
 		<Header />
-		<div className="layout">{props.children}</div>
-	</div>
+		<Container className="layout">
+			{props.children}
+		</Container>
+	</Box>
 )
 
 export default Layout

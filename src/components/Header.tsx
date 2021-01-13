@@ -30,7 +30,8 @@ const useStyles = makeStyles((theme: Theme) =>
 			display: 'none',
 			[theme.breakpoints.up('sm')]: {
 				display: 'block'
-			}
+			},
+			cursor: 'pointer'
 		},
 		search: {
 			position: 'relative',
@@ -114,6 +115,7 @@ const Header: React.FC = () => {
 
 	let right = null
 
+	//FIXME: use this
 	if (loading) {
 		left = (
 			<div className="left">
@@ -131,6 +133,7 @@ const Header: React.FC = () => {
 		)
 	}
 
+	//FIXME: use this
 	if (!session) {
 		right = (
 			<div className="right">
@@ -229,13 +232,17 @@ const Header: React.FC = () => {
 					>
 						<MenuIcon />
 					</IconButton>
-					<Typography
-						className={classes.title}
-						variant="h6"
-						noWrap
+					<Link
+						href={'app'}
 					>
-						{"Let's Watch It Together"}
-					</Typography>
+						<Typography
+							className={classes.title}
+							variant="h6"
+							noWrap
+						>
+							{`Let's Watch It Together`}
+						</Typography>
+					</Link>
 					<div className={classes.search}>
 						<div className={classes.searchIcon}>
 							<SearchIcon />
@@ -271,7 +278,7 @@ const Header: React.FC = () => {
 								session.user.image ?
 									<Avatar
 										className={classes.customAvatar}
-										alt={"user's avatar from auth provider"}
+										alt={'user\'s avatar from auth provider'}
 										src={session.user.image}
 									/> :
 									<AccountCircle />

@@ -19,22 +19,32 @@ enum TmdbMediaType {
 }
 
 model MediaLike {
-  id        Int           @default(autoincrement()) @id
+  id              Int             @default(autoincrement()) @id
 
-  tmdbId    Int           @map(name: "tmdb_id")
-  type      TmdbMediaType @default(SHOW)
-  userId    Int           @map(name: "user_id")
-  user      User          @relation(fields: [userId], references: [id])
+  tmdbId            Int           @map(name: "tmdb_id")
+  type            TmdbMediaType   @default(SHOW)
 
-  likedAt   DateTime      @map(name:"liked_at") @default(now())
+  user            User            @relation(fields: [userId], references: [id])
+  userId          Int             @map(name: "user_id")
 
-  // 0-100
-  rating    Int           @default(100)
+  // TODO: dislike, emoji reaction support?
+  state           MediaLikeState  @default(LIKED)
+
+  likedAt         DateTime        @map(name:"liked_at") @default(now())
+  unlikedAt       DateTime?       @map(name:"unliked_at")
+
+  // TODO: 0-100
+  rating          Int             @default(100)
 
   @@unique([tmdbId, type, userId])
   @@index([tmdbId, type])
   @@index([tmdbId])
   @@map(name: "media_liked")
+}
+
+enum MediaLikeState {
+  LIKED
+  UNLIKED
 }
 
 model User {
@@ -45,10 +55,10 @@ model User {
   image                  String?
   createdAt              DateTime         @default(now()) @map(name: "created_at")
   updatedAt              DateTime         @default(now()) @updatedAt @map(name: "updated_at")
-  liked                  MediaLike[] // TMDB ids
+  liked                  MediaLike[]      // TMDB ids
 
-  friendRequestsSent         FriendRequests[] @relation(name: "Requester")
-  friendRequestsReceived         FriendRequests[] @relation(name: "Requestee")
+  friendRequestsSent     FriendRequests[] @relation(name: "Requester")
+  friendRequestsReceived FriendRequests[] @relation(name: "Requestee")
 
   meetingsCreated        Meeting[]        @relation(name: "Inviter")
   meetingsReceived       Meeting[]        @relation(name: "Invitee")
@@ -57,6 +67,12 @@ model User {
 }
 
 model FriendRequests {
+  // TODO: to be able to do cursor pagination one might need to create two custom
+  //       int fields on this table, one for the sequential id of the requester's friends
+  //       and one for the sequential id of the requestee's friends
+  //       note this should only be stored if the friendshipType is ACCEPTED
+  //       otherwise logically I think it can be null, but schema may cry
+  //       see https://github.com/prisma/prisma/discussions/4888#discussioncomment-264823
   requester              User             @relation(name: "Requester", fields: [requesterId], references: [id])
   requesterId            Int              @map(name: "requester_id")
 
@@ -85,7 +101,22 @@ enum FriendshipType {
 
 model Meeting {
   id                     Int              @default(autoincrement()) @id
-  media                  Int              // TMDB id
+
+  tmdb                   Int
+  tmdbMediaType          TmdbMediaType    @default(SHOW) @map(name: "tmdb_media_type")
+
+//  TODO: possible feature
+//  seasonStart            Int?
+//  seasonEnd              Int?
+//  episodeStart           Int?
+//  episodeEnd             Int?
+
+// TODO: redis-based notifications with update state?
+// this would need to be incremented on each update
+// that should trigger a notification, this could be stored on redis
+// but probably should have asource of truth so we can know that redis
+// lost some data
+// redisUpdateCounter    Int              @map(name: "redis_update_counter")
 
   inviter                User             @relation(name: "Inviter", fields: [inviterId], references: [id])
   inviterId              Int              @map(name: "inviter_id")
@@ -93,14 +124,34 @@ model Meeting {
   invitee                User             @relation(name: "Invitee", fields: [inviteeId], references: [id])
   inviteeId              Int              @map(name: "invitee_id")
 
-  suggestedDate          DateTime?        @map(name: "suggested_date")
+  suggestedDate          DateTime         @map(name: "suggested_date")
+  state                  MeetingState     @default(PROPOSED)
+
   createdAt              DateTime         @default(now()) @map(name: "created_at")
   acceptedAt             DateTime?        @map(name: "accepted_at")
-  updatedAt              DateTime         @default(now()) @map(name: "updated_at")
+  cancelledAt            DateTime?        @map(name: "cancelled_at")
+  declinedAt             DateTime?        @map(name: "declined_at")
+  updatedAt              DateTime         @default(now()) @map(name: "updated_at") @updatedAt
 
   @@index([inviteeId], name: "inviteeId")
   @@index([inviterId], name: "inviterId")
   @@map(name: "meetings")
+}
+
+enum MeetingState {
+  PROPOSED
+  CANCELLED_INVITER
+  CANCELLED_INVITEE
+  READ_INVITEE
+  READ_INVITER
+  EDITED_INVITER
+  EDITED_INVITEE
+  // FIXME: Don't know who accepted!
+  ACCEPTED_INVITEE
+  ACCEPTED_INVITER
+  DECLINED_INVITEE
+  DECLINED_INVITER
+  WATCHED
 }
 
 model Account {

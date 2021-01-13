@@ -69,7 +69,8 @@ Set `NODE_ENV` to `development` to disable PWA.
     ```
    
    You can also add some dummy users if you want:
-   **THIS BREAKS EVERYTHING!!!**
+   
+   **THIS BREAKS EVERYTHING IF THE SERVER IS RUNNING!!!**
    ```bash
    $ npm run dev-seed
    ```

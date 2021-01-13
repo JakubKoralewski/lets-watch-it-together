@@ -1,18 +1,26 @@
-import { UserPublicSearchResult } from '../../lib/UserPublic'
+import { UserPublicSearchResult } from '../../lib/api/users/UserPublic'
 import { AccountBox } from '@material-ui/icons'
-import { Avatar, Box, Button, makeStyles, PropTypes } from '@material-ui/core'
+import { Avatar, makeStyles } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
-import { FriendshipTypeResponse } from '../../lib/api/user/[id]/FriendshipType'
-import assertUnreachable from '../../lib/utils/assertUnreachable'
-import { useState } from 'react'
+import { FriendshipTypeResponse } from '../../lib/api/users/[id]/FriendshipType'
+import { PropsWithChildren, useEffect, useState } from 'react'
+import ToggleFriendButton from './ToggleFriendButton'
+import CreateMeetingButton from './CreateMeetingButton'
+import { isFriend } from '../../lib/api/friends/isFriend'
+import { motion } from 'framer-motion'
+import { useRouter } from 'next/router'
+import { Skeleton } from '@material-ui/lab'
 
 export interface UserSmallProps {
 	user: UserPublicSearchResult,
 	className?: string,
-	onPrimaryActionTaken: () => void
+	onFriendToggle?: () => void,
+	onNewMeetingPress?: () => void,
+	isLoading?: boolean,
+	additionalContent?: JSX.Element
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -42,101 +50,70 @@ export default function UserSmall(
 	{
 		user,
 		className,
-		onPrimaryActionTaken
+		onFriendToggle,
+		onNewMeetingPress,
+		isLoading,
+		additionalContent
 	}: UserSmallProps
-) {
+): JSX.Element {
 	const [userStatus, setUserStatus] =
 		useState<FriendshipTypeResponse>(user.status)
+	const router = useRouter()
 	const classes = useStyles()
-	const buttonType: (
-		text: string,
-		onClick: () => void,
-		color: PropTypes.Color
-	) => JSX.Element =
-		(text, onClick, color = 'primary') => (
-			<Button
-				variant={'contained'}
-				color={color}
-				disabled={false}
-				onClick={onClick}
-			>
-				{text}
-			</Button>
+	const customProps = { layoutId: `userSmall${user.id}` }
+	const routerUrl = `/user/${user.id}/meetings/new`
+	useEffect(() => {
+		void router.prefetch(
+			routerUrl
 		)
-	let buttonText: string
-	let buttonColor: PropTypes.Color = 'primary'
-	let onClick: () => unknown
-
-	/* Active or not active button */
-	switch (userStatus) {
-		case FriendshipTypeResponse.CancelledByYou:
-		case FriendshipTypeResponse.CancelledByOther:
-		case FriendshipTypeResponse.NotFriends:
-			buttonText = 'Invite'
-			onClick = () => {
-				sendFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.RequestedByYou)
-				})
-			}
-			break
-		case FriendshipTypeResponse.RequestedByOther:
-			buttonText = 'Accept Invite'
-			onClick = () => {
-				acceptFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.AcceptedByYou)
-				})
-			}
-			break
-		case FriendshipTypeResponse.AcceptedByOther:
-		case FriendshipTypeResponse.AcceptedByYou:
-			onClick = () => {
-				unfriend(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.NotFriends)
-				})
-			}
-			buttonText = 'Unfriend'
-			buttonColor = 'secondary'
-			break
-		case FriendshipTypeResponse.RequestedByYou:
-			buttonText = 'Cancel invite'
-			onClick = () => {
-				cancelFriendRequest(user.id).then(() => {
-					setUserStatus(FriendshipTypeResponse.NotFriends)
-				})
-			}
-			buttonColor = 'secondary'
-			break
-		default: {
-			assertUnreachable(userStatus)
-		}
-
-	}
-	const onClickWithPrimaryAction = async () => {
-		await onClick()
-		onPrimaryActionTaken()
+	}, [])
+	const onNewMeetingButtonClick = async () => {
+		onNewMeetingPress && onNewMeetingPress()
+		await router.push(
+			routerUrl,
+			undefined
+		)
 	}
 	return (
-		<Card className={className}>
+		<Card
+			className={className}
+			component={motion.div as any}
+			{...customProps}
+		>
 			<CardContent>
 				<Avatar
 					alt={user.name}
 					src={user.image}
 					className={classes.large}
 				>
-					{!user.image && <AccountBox />}
+					{
+						!isLoading && !user.image ? <AccountBox /> : <Skeleton />
+					}
 				</Avatar>
 				<Typography>
-					{user.name}
+					{isLoading ? <Skeleton /> : user.name}
 				</Typography>
+				{additionalContent}
 			</CardContent>
 			<CardActions>
+				{!isLoading &&
 
+				<ToggleFriendButton
+					sendFriendRequest={sendFriendRequest}
+					cancelFriendRequest={cancelFriendRequest}
+					acceptFriendRequest={acceptFriendRequest}
+					unfriend={unfriend}
+					userStatus={userStatus}
+					userId={user.id}
+					setUserStatus={setUserStatus}
+					onClick={onFriendToggle}
+				/>
+				}
 				{
-					buttonType(
-						buttonText,
-						onClickWithPrimaryAction,
-						buttonColor
-					)
+					!isLoading && onNewMeetingPress && isFriend(user) &&
+						<CreateMeetingButton
+							onClick={onNewMeetingButtonClick}
+						/>
 				}
 			</CardActions>
 		</Card>
