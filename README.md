@@ -159,6 +159,16 @@ $ docker run -e PORT=3000 lwit
 where `3000` is the port you want the server to run on and `lwit` is
 the same tag you named the image in `docker build`.
 
+To also have all the environment variables (you need to fill them in):
+But this looks like it can't connect to the other Docker containers
+(Postgres and Redis), so it doesn't work... try the `docker-compose` command above
+```bash
+$ docker run -p 3000:3000 -e PORT=3000 \
+  -e DATABASE_URL=postgresql://postgres:postgres-dev@localhost:5432/db \
+  -e REDIS_URL=redis://localhost:6379 -e GITHUB_ID=PASTEHERE \
+  -e GITHUB_SECRET=PASTEHERE -e TMDB_API_KEY=PASTEHERE lwit
+```
+
 Also you can build the app to make sure it works in production:
 ```bash
 $ NODE_ENV=production npm run build

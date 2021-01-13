@@ -43,6 +43,7 @@ export enum TmdbErrorType {
 }
 
 const traceLogger = createLogger(LoggerTypes.Tmdb, false)
+const loggerWithCallsiteInfo = createLogger(LoggerTypes.Tmdb, true)
 
 export type TmdbErrorTmdbResponse = {
 	response: {
@@ -240,10 +241,12 @@ class TmdbClient {
 }
 
 if (!process.env.TMDB_API_KEY) {
-	throw new TmdbError(
-		TmdbErrorType.NoApiKey,
-		'TMDB_API_KEY environment variable not set!'
-	)
+	loggerWithCallsiteInfo.warn({
+		err: new TmdbError(
+			TmdbErrorType.NoApiKey,
+			'TMDB_API_KEY environment variable not set!'
+		)
+	})
 }
 const client = new TmdbClient(process.env.TMDB_API_KEY, redis, 3)
 
