@@ -3,9 +3,9 @@ import { useRouter } from 'next/router'
 import Protected from '../../../../components/Protected'
 import Layout from '../../../../components/Layout'
 import theme from '../../../../theme'
-import { NextPageContext } from 'next'
+import { GetServerSideProps } from 'next'
 import { getUserDetails } from '../../../../lib/api/users/[id]/getUserDetails'
-import {getSession} from '../../../../lib/api/utils/getSession'
+import { getSession } from '../../../../lib/api/utils/getSession'
 import UserDetailsView from '../../../../components/User/UserDetailsView'
 import { UserDetails } from '../../../../lib/api/users/UserDetails'
 import PreviewShowsInCommon from '../../../../components/User/PreviewShowsInCommon'
@@ -21,51 +21,54 @@ const useStyles = makeStyles({
 	}
 })
 
-export async function getServerSideProps(context: NextPageContext):
-	Promise<{props: NewMeetingWithUserProps | undefined}>
-{
-	const logger = createLogger(LoggerTypes.NewMeetingGetServerSideProps)
-	let userId: number = undefined
-	try {
-		userId = parseInt(context.query.id as string)
-		if(userId < 0)  {
+// Promise<{props: NewMeetingWithUserProps | undefined}>
+export const getServerSideProps: GetServerSideProps =
+	async (context) => {
+		const logger = createLogger(LoggerTypes.NewMeetingGetServerSideProps)
+		let userId: number = undefined
+		try {
+			userId = parseInt(context.query.id as string)
+			if (userId < 0) {
+				userId = -1
+			}
+		} catch (e) {
 			userId = -1
 		}
-	} catch(e) {
-		userId = -1
-	}
-	const session = await getSession(context)
-	if(!session || userId === -1) {
-		context.res.setHeader("Location", "/app")
-		context.res.statusCode = 302
-		context.res.end()
-		return {props: undefined}
-	}
-	const user = await getUserDetails(
-		userId,
-		session.user.id,
-		false
-	)
-	logger.info({
-		user
-	})
-
-	return {
-		props: {
+		const session = await getSession(context)
+		if (!session || userId === -1) {
+			//TODO: use the redirect key in return value of serversideprops
+			// https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering
+			context.res.setHeader('Location', '/app')
+			context.res.statusCode = 302
+			context.res.end()
+			return { props: undefined }
+		}
+		const user = await getUserDetails(
+			userId,
+			session.user.id,
+			false
+		)
+		logger.info({
 			user
+		})
+
+		return {
+			props: {
+				user
+			}
 		}
 	}
-}
 
 
-export default function NewMeetingWithUser({
-	user
-}: NewMeetingWithUserProps):
-	JSX.Element
-{
+export default function NewMeetingWithUser(
+	{
+		user
+	}: NewMeetingWithUserProps
+):
+	JSX.Element {
 	const styles = useStyles()
 	const router = useRouter()
-	console.log({router})
+	console.log({ router })
 	let userTitle = null
 	if (user) {
 		userTitle = <>

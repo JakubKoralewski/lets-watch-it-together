@@ -20,13 +20,17 @@ export class NextAuthError extends
 {
 	constructor(
 		public nextAuthErrorType: NextAuthErrorType,
-		public mapMessage?: unknown,
+		public mapMessage?: string,
+		public parentError?: Error
 	) {
 		super(
-			LibErrorType.NextAuth,
-			NextAuthErrorType,
-			nextAuthErrorType,
-			JSON.stringify(mapMessage)
+			{
+				libErrorType: LibErrorType.NextAuth,
+				innerEnum: NextAuthErrorType,
+				innerErrorEnumValue: nextAuthErrorType,
+				libErrorMessage: mapMessage,
+				parentError
+			}
 		)
 	}
 }

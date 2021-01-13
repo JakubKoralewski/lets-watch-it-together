@@ -3,7 +3,7 @@ import Protected from '../../../components/Protected'
 import Layout from '../../../components/Layout'
 import { WelcomeInner } from './index'
 import { useEffect, useRef } from 'react'
-import { Stages } from './stages'
+import { Stages } from '../../../components/pages/welcome/stages'
 import { NextPageContext } from 'next'
 
 export const stagesToPathsMap = {

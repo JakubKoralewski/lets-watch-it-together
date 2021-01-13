@@ -25,6 +25,8 @@ import { act } from '@testing-library/react'
 
 function renderWithProvider(elem: JSX.Element, options: unknown) {
 	return render(
+		//TODO: Move providers to testUtils.ts
+		//     redux is not actually used btw
 		<redux.Provider store={store}>{elem}</redux.Provider>,
 		options
 	)

@@ -8,7 +8,7 @@ import { AddMeeting } from '../../../components/pages/welcome/AddMeeting'
 
 
 import { stagesToPathsMap } from './[welcome_stage]'
-import { Stages } from './stages'
+import { Stages } from '../../../components/pages/welcome/stages'
 
 
 export function Finished() {
