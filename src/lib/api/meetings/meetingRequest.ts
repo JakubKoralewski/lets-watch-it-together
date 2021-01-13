@@ -53,9 +53,11 @@ export async function meetingRequest(
 	yourId: User['id'],
 	friendId: User['id']
 ):
-	Promise<Meeting>
+	Promise<void>
+// Promise<Meeting>
 {
-	const user = await prisma.user.findUnique({
+
+/*	const user = await prisma.user.findUnique({
 		where: {
 			id: ofUserWithId
 		},
@@ -100,5 +102,5 @@ export async function meetingRequest(
 		.concat(
 			user.friendRequestsSent
 				.map(toFriendRequestSent)
-		)
+		)*/
 }
