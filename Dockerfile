@@ -2,7 +2,7 @@
 
 # https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile.multistage
 # Stage 1: Building the code
-FROM mhart/alpine-node AS builder
+FROM mhart/alpine-node:15 AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ RUN apk --no-cache add curl
 RUN chmod a+x ./prisma/heroku-release.sh
 
 # Stage 2: And then copy over node_modules, etc from that stage to the smaller base image
-FROM mhart/alpine-node:slim as production
+FROM mhart/alpine-node:slim-15 as production
 
 COPY --from=builder /usr/bin/curl /usr/bin/curl
 
