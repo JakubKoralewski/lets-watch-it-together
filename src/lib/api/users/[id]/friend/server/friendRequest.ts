@@ -1,8 +1,8 @@
 import { FriendshipType, Prisma, User } from '@prisma/client'
 import prisma from 'lib/prisma/prisma'
-import assertUnreachable from '../../../utils/assertUnreachable'
-import { createLogger, LoggerTypes } from '../../../logger'
-import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
+import assertUnreachable from '../../../../../utils/assertUnreachable'
+import { createLogger, LoggerTypes } from '../../../../../logger'
+import { ErrorInLibWithLogging, LibErrorType } from '../../../../../logger/libLogger'
 import { Logger } from 'pino'
 
 export enum AddFriendErrorType {

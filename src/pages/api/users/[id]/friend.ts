@@ -4,11 +4,11 @@ import {
 	AddFriendErrorType,
 	friendRequest,
 	isAddFriendError
-} from 'lib/api/users/[id]/friendRequest'
+} from 'lib/api/users/[id]/friend/server/friendRequest'
 import HTTPMethod from 'lib/utils/HTTPMethod'
 import assertUnreachable from 'lib/utils/assertUnreachable'
-import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
-import { getIdAsNumber, setMessageAsErrorTypeGenerator } from '../../../../lib/api/utils/validation'
+import { protectedApiHandler } from 'lib/api/utils/protectedApiHandler'
+import { getIdAsNumber, setMessageAsErrorTypeGenerator } from 'lib/api/utils/validation'
 
 const {
 	HTTP_STATUS_BAD_REQUEST,

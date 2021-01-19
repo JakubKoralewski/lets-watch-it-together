@@ -1,6 +1,6 @@
 import React from 'react'
-import { render } from '../testUtils'
-import Index from '../../src/pages/index'
+import { render } from '../../../testUtils'
+import Index from '../../../../src/pages'
 import * as redux from 'react-redux'
 import store from 'store'
 import * as nextRouter from 'next/router'

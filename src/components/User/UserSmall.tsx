@@ -5,7 +5,7 @@ import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
-import { FriendshipTypeResponse } from '../../lib/api/users/[id]/FriendshipType'
+import { FriendshipTypeResponse } from '../../lib/api/users/[id]/friend/FriendshipType'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import ToggleFriendButton from './ToggleFriendButton'
 import CreateMeetingButton from './CreateMeetingButton'
@@ -30,21 +30,6 @@ const useStyles = makeStyles((theme) => ({
 	}
 }))
 
-async function sendFriendRequest(id: number) {
-	await fetch(`/api/users/${id}/friend`, { method: 'POST' })
-}
-
-async function acceptFriendRequest(id: number) {
-	await fetch(`/api/users/${id}/friend`, { method: 'PATCH' })
-}
-
-async function unfriend(id: number) {
-	await fetch(`/api/users/${id}/friend`, { method: 'DELETE' })
-}
-
-async function cancelFriendRequest(id: number) {
-	await fetch(`/api/users/${id}/friend?cancel=1`, { method: 'DELETE' })
-}
 
 export default function UserSmall(
 	{

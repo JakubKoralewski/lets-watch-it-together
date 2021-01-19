@@ -30,7 +30,7 @@ import {
 	AddFriendErrorType,
 	friendRequest,
 	isAddFriendError
-} from '../../src/lib/api/users/[id]/friendRequest'
+} from '../../src/lib/api/users/[id]/friend/server/friendRequest'
 import {
 	privateIdToPrismaIdTypeMap,
 	TmdbId,

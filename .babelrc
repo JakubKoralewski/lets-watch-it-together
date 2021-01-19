@@ -1,3 +1,13 @@
 {
-  "presets": ["next/babel"]
+  "presets": ["next/babel"],
+  "env": {
+    "production": {
+      "plugins": [
+        // https://www.npmjs.com/package/babel-plugin-react-remove-properties
+        ["react-remove-properties", {"properties": ["data-testid"]}],
+        // https://babeljs.io/docs/en/babel-plugin-transform-remove-console
+        ["transform-remove-console"]
+      ]
+    }
+  }
 }

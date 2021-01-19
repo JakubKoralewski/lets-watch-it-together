@@ -1,6 +1,6 @@
 # local dev env only!!!
 
-version: '2'
+version: '3'
 services:
   web:
     build: .
@@ -14,4 +14,5 @@ services:
       - redis
     volumes:
       - .:/app
-
+volumes:
+  pgdata:

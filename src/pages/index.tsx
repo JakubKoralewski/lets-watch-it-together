@@ -50,6 +50,7 @@ function SignIn({ providers }: ProvidersProps) {
 						color="primary"
 						className={classes.submit}
 						onClick={() => signIn(provider.id, {callbackUrl: "/app"})}
+						{...{"data-testid": `sign-in-${provider.name.toLowerCase()}`}}
 					>
 						Sign In with {provider.name}
 					</Button>

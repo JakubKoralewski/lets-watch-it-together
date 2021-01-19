@@ -15,8 +15,9 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "baseUrl": "./src",
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["jest"]
   },
-  "exclude": ["node_modules", ".next", "out"],
+  "exclude": ["node_modules", ".next", "out", "test/cypress"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"]
 }

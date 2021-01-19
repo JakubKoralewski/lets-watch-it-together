@@ -3,7 +3,7 @@ import {
 	getUserDetails,
 	GetUserDetailsErrorType,
 	isGetUserDetailsError
-} from '../../../../lib/api/users/[id]/getUserDetails'
+} from '../../../../lib/api/users/[id]/friend/server/getUserDetails'
 import { protectedApiHandler } from '../../../../lib/api/utils/protectedApiHandler'
 import { getIdAsNumber, setMessageAsErrorTypeGenerator } from '../../../../lib/api/utils/validation'
 import { UserDetails } from '../../../../lib/api/users/UserDetails'

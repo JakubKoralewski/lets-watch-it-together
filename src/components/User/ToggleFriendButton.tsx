@@ -1,5 +1,5 @@
 import { Button, PropTypes } from '@material-ui/core'
-import { FriendshipTypeResponse } from '../../lib/api/users/[id]/FriendshipType'
+import { FriendshipTypeResponse } from '../../lib/api/users/[id]/friend/FriendshipType'
 import assertUnreachable from '../../lib/utils/assertUnreachable'
 import {UserPublicSearchResult} from '../../lib/api/users/UserPublic'
 
