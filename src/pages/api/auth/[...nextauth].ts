@@ -70,7 +70,7 @@ const options: InitOptions = {
 			//       leaking the oauth tokens!
 			//       https://docs.github.com/en/developers/apps/scopes-for-oauth-apps
 			//       I think `scope: 'read:user user:email'` would be good fit
-			// scope: `user:email read:user`
+			scope: 'user:email read:user'
 		}),
 	],
 	callbacks: {
