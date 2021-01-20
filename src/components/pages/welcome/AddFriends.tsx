@@ -11,13 +11,14 @@ import { User } from 'next-auth'
 
 export const useFriendsStyles = makeStyles((theme) => ({
 	userSmall: {
-		margin: theme.spacing(7)
+		margin: theme.spacing(3)
 	},
 	clickable: {
 		cursor: 'pointer'
 	},
 	usersContainer: {
-		display: 'flex'
+		display: 'flex',
+		flexWrap: 'wrap'
 	},
 	root: {
 		flexGrow: 1

@@ -37,16 +37,9 @@ export function NextOrSkipWrapper(
 			<Button
 				variant="contained"
 				color="primary"
-				disabled={!canGoForward}
-				onClick={canGoForward ? nextStage : undefined}
+				onClick={nextStage}
 			>
 				NEXT
-			</Button>
-			<Button
-				onClick={nextStage}
-				color="secondary"
-			>
-				SKIP
 			</Button>
 		</Container>
 	)
