@@ -28,8 +28,8 @@
     "got": "^11.8.1",
     "lodash": "^4.17.20",
     "material-ui-dropzone": "^3.5.0",
-    "next": "latest",
-    "next-auth": "^3.1.0",
+    "next": "^10.0.5",
+    "next-auth": "^3.2.0-canary.35",
     "next-pwa": "^5.0.1",
     "pino": "^6.10.0",
     "pino-caller": "^3.0.2",
@@ -68,6 +68,7 @@
     "promptly": "^3.2.0",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^4.2.0-dev.20201211"
+    "typescript": "^4.2.0-dev.20201211",
+    "webpack": "^5.19.0"
   }
 }

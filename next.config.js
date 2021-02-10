@@ -6,6 +6,9 @@ module.exports = (_phase, {_defaultConfig}) => {
 			dest: 'public',
 			disable: process.env.NODE_ENV === 'development'
 		},
-		reactStrictMode: true
+		reactStrictMode: true,
+		future: {
+			webpack5: true
+		}
 	})
 }
