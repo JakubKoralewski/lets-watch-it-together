@@ -1,0 +1,9 @@
+# local dev env only!!!
+# https://stackoverflow.com/a/53522670/10854888
+
+version: '3'
+# this is done so that the tests docker-compose doesnt have persistence
+# but local prod and dev docker-compose have the same persisted data in Postgres
+volumes:
+  pgdata:
+

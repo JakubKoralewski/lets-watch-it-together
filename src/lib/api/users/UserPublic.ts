@@ -1,6 +1,6 @@
 import {
 	FriendshipTypeResponse
-} from './[id]/FriendshipType'
+} from './[id]/friend/FriendshipType'
 import { FriendshipType, User, Prisma } from '@prisma/client'
 import { mapUserToKnownFriend } from './UserDetails'
 import { createLogger, LoggerTypes } from '../../logger'

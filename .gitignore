@@ -1,6 +1,7 @@
 .env
 !.env.example
 cypress.env.json
+
 public/*.js
 public/*.js.map
 

@@ -1,14 +1,14 @@
 import { mapUserToUserPublicSearchResult } from 'lib/api/users/UserPublic'
 import prisma from 'lib/prisma/prisma'
 import { FriendRequests, FriendshipType, MediaLikeState, MeetingState, User } from '@prisma/client'
-import { mapUserToKnownFriend, UserDetails } from '../UserDetails'
-import { mapMeetingToMeetingFriendResult, MeetingFriendResult } from '../../meetings/MeetingFriendResult'
-import { ErrorInLibWithLogging, LibErrorType } from '../../../logger/libLogger'
-import { mediaLikeToId } from '../../../tmdb/api/id'
-import getShowDetails from '../../shows/getShowDetails'
-import { createLogger, LoggerTypes } from '../../../logger'
-import { stripDetails, StrippedShowDetails } from '../../shows/[id]/StrippedShowDetails'
-import { mapShowLiked } from '../../shows/[id]/isShowLiked'
+import { mapUserToKnownFriend, UserDetails } from '../../../UserDetails'
+import { mapMeetingToMeetingFriendResult, MeetingFriendResult } from '../../../../meetings/MeetingFriendResult'
+import { ErrorInLibWithLogging, LibErrorType } from '../../../../../logger/libLogger'
+import { mediaLikeToId } from '../../../../../tmdb/api/id'
+import getShowDetails from '../../../../shows/getShowDetails'
+import { createLogger, LoggerTypes } from '../../../../../logger'
+import { stripDetails, StrippedShowDetails } from '../../../../shows/[id]/StrippedShowDetails'
+import { mapShowLiked } from '../../../../shows/[id]/isShowLiked'
 
 export enum GetUserDetailsErrorType {
 	/** FIXME: ignore edge case

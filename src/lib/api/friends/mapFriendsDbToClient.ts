@@ -1,6 +1,6 @@
 import { FriendRequests, User } from '@prisma/client'
 import { UserPublicSearchResult } from '../users/UserPublic'
-import { FriendshipTypeResponse } from '../users/[id]/FriendshipType'
+import { FriendshipTypeResponse } from '../users/[id]/friend/FriendshipType'
 
 export type YourFriend =
 	Omit<UserPublicSearchResult, 'status'> & {

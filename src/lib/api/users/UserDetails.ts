@@ -6,7 +6,7 @@ import {
 	toFriendRequestReceived as toFriendRequestReceivedInner, toFriendRequestSent,
 	toFriendRequestSent as toFriendRequestSentInner
 } from '../friends/mapFriendsDbToClient'
-import { FriendshipTypeResponse } from './[id]/FriendshipType'
+import { FriendshipTypeResponse } from './[id]/friend/FriendshipType'
 import { TmdbId, TmdbIdSerialized } from '../../tmdb/api/id'
 import { TMDBTvGetDetailsResponse } from '../../tmdb/api/tv_get_details'
 import { StrippedShowDetails } from '../shows/[id]/StrippedShowDetails'

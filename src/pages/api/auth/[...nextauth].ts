@@ -65,6 +65,11 @@ const options: InitOptions = {
 		Providers.GitHub({
 			clientId: process.env.GITHUB_ID,
 			clientSecret: process.env.GITHUB_SECRET,
+			// TODO: specify scope
+			//       to limit possible security vulnerability of
+			//       leaking the oauth tokens!
+			//       https://docs.github.com/en/developers/apps/scopes-for-oauth-apps
+			//       I think `scope: 'read:user user:email'` would be good fit
 			scope: 'user:email read:user'
 		}),
 	],

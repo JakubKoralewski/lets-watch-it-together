@@ -1,0 +1,11 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "chromeWebSecurity": false,
+  "fixturesFolder": "test/cypress/fixtures",
+  "integrationFolder": "test/cypress/integration",
+  "screenshotsFolder": "test/cypress/screenshots",
+  "videosFolder": "test/cypress/videos",
+  "pluginsFile": "test/cypress/plugins/index.ts",
+  "supportFile": "test/cypress/support/index.ts",
+  "testFiles": "**/*.spec.ts"
+}

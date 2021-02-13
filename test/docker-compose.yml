@@ -1,0 +1,25 @@
+# docker compose setup meant to be extended with ../docker-compose.yml
+# for e2e testing
+
+version: '3'
+services:
+  web-tests:
+    build:
+      # https://stackoverflow.com/questions/53093487/multi-stage-build-in-docker-compose
+      context: ..
+      dockerfile: ../Dockerfile
+      target: builder
+    env_file: ../.env
+    environment:
+      - WEB_PORT=3000
+      - DB_PORT=5432
+      - REDIS_PORT=6379
+    command: dockerize
+      -wait tcp://db:5432 -wait tcp://web:$PORT -wait tcp://redis:6379 -timeout 20s
+      bash -c "npm run test:docker"
+    depends_on:
+      - db
+      - redis
+      - web
+    volumes:
+      - ..:/app

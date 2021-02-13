@@ -225,7 +225,7 @@ const Header: React.FC = () => {
 	)
 
 	return (
-		<div className={classes.grow}>
+		<div className={classes.grow} {...{'data-testid': 'header'}}>
 			<AppBar position="static">
 				<Toolbar>
 					<IconButton
